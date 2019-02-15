@@ -66,10 +66,17 @@ function _init()
   init_game()
   
   if server_only then
-    create_unit(4,4,1)
-    create_unit(8,8,1)
-    create_unit(4,8,1)
-    create_unit(8,4,1)
+    create_unit(3,5,1)
+    create_unit(5,3,1)
+    
+    create_unit(GRID_WN-3,5,2)
+    create_unit(GRID_WN-5,3,2)
+    
+    create_unit(3,GRID_HN-5,3)
+    create_unit(5,GRID_HN-3,3)
+    
+    create_unit(GRID_WN-3,GRID_HN-5,4)
+    create_unit(GRID_WN-5,GRID_HN-3,4)
   end
 end
 
@@ -1351,8 +1358,6 @@ function init_game()
   
   faction_res = {99,99,99,99}
   faction_tiles = {0,0,0,0}
-  
-  init_board_rendering()
 end
 
 grid_surf = nil

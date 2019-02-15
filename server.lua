@@ -3,7 +3,6 @@ if castle then
 else
   cs = require("cs")
 end
-
 server = cs.server
 
 server.maxClients = 4
@@ -42,32 +41,33 @@ function server.load()
 
   server_only = true
   
---  local syss = {"audio", "graphics", "video", "window"}
---  local syssav = {}
---  for sys in all(syss) do
---    syssav[sys], love[sys] = love[sys], nil
---  end
---  
---  _init()
---  
---  for sys in all(syss) do
---    love[sys] = syssav[sys]
---  end
-
- -- vvv tmp vvv
-  init_graphics(400,300)
-  init_audio()
-  init_shader_mgr()
-  init_input_mgr()
-  font("small")
-  pal()
-  
-  predraw()
-  _init()
-  afterdraw()
-  
-  love.keyboard.setKeyRepeat(true)
-  love.keyboard.setTextInput(false)
+  if USE_CASTLE_CONFIG then
+    local syss = {"audio", "graphics", "video", "window"}
+    local syssav = {}
+    for sys in all(syss) do
+      syssav[sys], love[sys] = love[sys], nil
+    end
+    
+    _init()
+    
+    for sys in all(syss) do
+      love[sys] = syssav[sys]
+    end
+  else
+    init_graphics(400,300)
+    init_audio()
+    init_shader_mgr()
+    init_input_mgr()
+    font("big")
+    pal()
+    
+    predraw()
+    _init()
+    afterdraw()
+    
+    love.keyboard.setKeyRepeat(true)
+    love.keyboard.setTextInput(false)
+  end
   
   
   server_only = false

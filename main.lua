@@ -62,8 +62,8 @@ if not USE_CASTLE_CONFIG then
 
   function love.draw()
     if ROLE then
-      font("big")
-      color(23)
+--      font("big")
+--      color(23)
       love.graphics.print("Running server.", 32, 32)
       
       local y = 48
@@ -81,8 +81,10 @@ if not USE_CASTLE_CONFIG then
   
   function love.keyreleased(key)
     if key == '1' then
+      love.keyreleased = nil
       start_server()
     elseif key == '2' then
+      love.keyreleased = nil
       start_client()
     end
   end
