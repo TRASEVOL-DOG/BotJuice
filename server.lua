@@ -41,7 +41,7 @@ function server.load()
 
   server_only = true
   
-  if true then-- USE_CASTLE_CONFIG then
+  if USE_CASTLE_CONFIG then
     local syss = {"audio", "graphics", "video", "window"}
     --local syss = {}
     local syssav = {}

@@ -7,7 +7,6 @@ if CASTLE_PREFETCH then
     'server.lua',
     'audio.lua',
     'drawing.lua',
-    'main.lua',
     'game.lua',
     'input.lua',
     'shader.lua',
