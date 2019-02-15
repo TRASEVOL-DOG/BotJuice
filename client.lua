@@ -3,6 +3,7 @@ if castle then
 else
   cs = require("cs")
 end
+client = cs.client
 
 if USE_CASTLE_CONFIG then
   client.useCastleConfig()
