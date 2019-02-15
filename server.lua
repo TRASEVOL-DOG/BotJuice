@@ -41,8 +41,9 @@ function server.load()
 
   server_only = true
   
-  if USE_CASTLE_CONFIG then
+  if true then-- USE_CASTLE_CONFIG then
     local syss = {"audio", "graphics", "video", "window"}
+    --local syss = {}
     local syssav = {}
     for sys in all(syss) do
       syssav[sys], love[sys] = love[sys], nil
@@ -102,6 +103,7 @@ function server.update(dt)
   dt30f = dt*30
   
   local syss = {"audio", "graphics", "video", "window"}
+  --local syss = {}
   local syssav = {}
   for sys in all(syss) do
     syssav[sys], love[sys] = love[sys], nil

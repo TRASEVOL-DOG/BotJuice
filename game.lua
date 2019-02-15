@@ -59,7 +59,9 @@ function _init()
   
   t = 0
   
-  cursor = create_cursor()
+  if not server_only then
+    cursor = create_cursor()
+  end
   
 --  init_task_sys()
   
@@ -1325,7 +1327,6 @@ function draw_debug()
     draw_text("Not connected", scrnw-4, 1, 2, 21)
   end
   
-  font("big")
   draw_text("debug: "..debuggg, scrnw, scrnh-8, 2, 21)
 end
 
