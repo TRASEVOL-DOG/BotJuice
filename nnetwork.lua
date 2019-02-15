@@ -49,10 +49,11 @@ function client_input(diff)
 --    return
 --  end
   
-  
-  local timestamp = client.share[1][client.id]
-  if timestamp then
-    delay = (love.timer.getTime() - timestamp) / 2
+  if client.share[1] then
+    local timestamp = client.share[1][client.id]
+    if timestamp then
+      delay = (love.timer.getTime() - timestamp) / 2
+    end
   end
   
   board_changes = diff[3]
@@ -84,9 +85,13 @@ function client_input(diff)
     end
   end
   
-  faction_res = copy_table(client.share[5])
+  if client.share[5] then
+    faction_res = copy_table(client.share[5])
+  end
   
-  my_faction = my_faction or client.share[6][client.id]
+  if client.share[6] then
+    my_faction = my_faction or client.share[6][client.id]
+  end
 end
 
 function client_output()
