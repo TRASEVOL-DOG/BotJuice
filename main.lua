@@ -19,8 +19,6 @@ if CASTLE_PREFETCH then
     'nnetwork.lua',
     'menu.lua',
     'fx.lua',
-    'cs.lua',
-    'state.lua',
     'assets/Marksman.ttf',
     'assets/EffortsPro.ttf',
     'assets/sheet.png',
