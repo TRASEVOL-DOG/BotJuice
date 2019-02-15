@@ -3,6 +3,8 @@
 
 if CASTLE_PREFETCH then
   CASTLE_PREFETCH({
+    'client.lua',
+    'server.lua',
     'audio.lua',
     'drawing.lua',
     'main.lua',
@@ -22,25 +24,7 @@ if CASTLE_PREFETCH then
     'assets/Marksman.ttf',
     'assets/EffortsPro.ttf',
     'assets/sheet.png',
-    'assets/Cyanotype_loop.ogg',
-    'assets/sfx/boom3.ogg',
-    'assets/sfx/sliderset.ogg',
-    'assets/sfx/hole.ogg',
-    'assets/sfx/scrap.ogg',
-    'assets/sfx/dog.ogg',
-    'assets/sfx/boom1.ogg',
-    'assets/sfx/gameover.ogg',
-    'assets/sfx/helix.ogg',
-    'assets/sfx/levelup.ogg',
-    'assets/sfx/boost.ogg',
-    'assets/sfx/shoot.ogg',
-    'assets/sfx/select.ogg',
-    'assets/sfx/confirm.ogg',
-    'assets/sfx/save.ogg',
-    'assets/sfx/shootorder.ogg',
-    'assets/sfx/enemshoot.ogg',
-    'assets/sfx/boom2.ogg',
-    'palswap.shader',
+    'palswap.shader'
   })
 end
 
