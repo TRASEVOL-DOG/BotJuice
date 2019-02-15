@@ -1,4 +1,9 @@
-local cs = require 'cs'
+if castle then
+  cs = require("https://raw.githubusercontent.com/castle-games/share.lua/master/cs.lua")
+else
+  cs = require("cs")
+end
+
 server = cs.server
 
 server.maxClients = 4

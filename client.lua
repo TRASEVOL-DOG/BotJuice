@@ -1,5 +1,8 @@
-local cs = require 'cs'
-client = cs.client
+if castle then
+  cs = require("https://raw.githubusercontent.com/castle-games/share.lua/master/cs.lua")
+else
+  cs = require("cs")
+end
 
 if USE_CASTLE_CONFIG then
   client.useCastleConfig()
