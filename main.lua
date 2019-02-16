@@ -1,29 +1,29 @@
 -- BLAST FLOCK source files
 -- by TRASEVOL_DOG (https://trasevol.dog/)
 
---if CASTLE_PREFETCH then
---  CASTLE_PREFETCH({
---    'client.lua',
---    'server.lua',
---    'audio.lua',
---    'drawing.lua',
---    'game.lua',
---    'input.lua',
---    'shader.lua',
---    'maths.lua',
---    'sprite.lua',
---    'object.lua',
---    'ttable.lua',
---    'task.lua',
---    'nnetwork.lua',
---    'menu.lua',
---    'fx.lua',
---    'assets/Marksman.ttf',
---    'assets/EffortsPro.ttf',
---    'assets/sheet.png',
---    'palswap.shader'
---  })
---end
+if CASTLE_PREFETCH then
+  CASTLE_PREFETCH({
+    'client.lua',
+    'server.lua',
+    'audio.lua',
+    'drawing.lua',
+    'game.lua',
+    'input.lua',
+    'shader.lua',
+    'maths.lua',
+    'sprite.lua',
+    'object.lua',
+    'ttable.lua',
+    'task.lua',
+    'nnetwork.lua',
+    'menu.lua',
+    'fx.lua',
+    'assets/Marksman.ttf',
+    'assets/EffortsPro.ttf',
+    'assets/sheet.png',
+    'palswap.shader'
+  })
+end
 
 
 require("game")
