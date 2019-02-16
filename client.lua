@@ -42,14 +42,12 @@ function client.load()
   end
   castle_print("Starting client init...")
 
-  if not USE_CASTLE_CONFIG and not castle then
-    init_graphics(400,300)--2,2)
-    init_audio()
-    init_shader_mgr()
-    init_input_mgr()
-    font("small")
-    pal()
-  end
+  init_graphics(400,300)--2,2)
+  init_audio()
+  init_shader_mgr()
+  init_input_mgr()
+  font("small")
+  pal()
 
   predraw()
   _init()
