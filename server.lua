@@ -41,7 +41,7 @@ function server.load()
 
   server_only = true
   
-  if USE_CASTLE_CONFIG then
+  if true or USE_CASTLE_CONFIG then
     local syss = {"audio", "graphics", "video", "window"}
     --local syss = {}
     local syssav = {}
@@ -55,12 +55,14 @@ function server.load()
       love[sys] = syssav[sys]
     end
   else
-    init_graphics(400,300)
-    init_audio()
-    init_shader_mgr()
-    init_input_mgr()
-    font("big")
-    pal()
+    if not castle then
+      init_graphics(400,300)
+      init_audio()
+      init_shader_mgr()
+      init_input_mgr()
+      font("big")
+      pal()
+    end
     
     predraw()
     _init()
@@ -89,12 +91,12 @@ function server.update(dt)
 
   if ROLE then server.preupdate() end
 
---  if not server_init then
---    castle_print("Calling server.load from update.")
---    server.load = server_load_sav
---    server.load()
---    return
---  end
+  if not server_init then
+    castle_print("Calling server.load from update.")
+    server.load = server_load_sav
+    server.load()
+    return
+  end
   
 --  castle_print("server update")
 

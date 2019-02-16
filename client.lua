@@ -42,12 +42,14 @@ function client.load()
   end
   castle_print("Starting client init...")
 
-  init_graphics(400,300)--2,2)
-  init_audio()
-  init_shader_mgr()
-  init_input_mgr()
-  font("small")
-  pal()
+  if not USE_CASTLE_CONFIG and not castle then
+    init_graphics(400,300)--2,2)
+    init_audio()
+    init_shader_mgr()
+    init_input_mgr()
+    font("small")
+    pal()
+  end
 
   predraw()
   _init()
@@ -88,6 +90,8 @@ function client.update(dt)
   update_input_mgr()
   
   if ROLE then client.postupdate() end
+  
+  love.graphics.setCanvas()
 end
 
 function client.draw()
@@ -99,6 +103,8 @@ function client.draw()
   predraw()
   _draw()
   afterdraw()
+  
+  love.graphics.setCanvas()
 end
 
 

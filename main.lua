@@ -1,29 +1,29 @@
 -- BLAST FLOCK source files
 -- by TRASEVOL_DOG (https://trasevol.dog/)
 
-if CASTLE_PREFETCH then
-  CASTLE_PREFETCH({
-    'client.lua',
-    'server.lua',
-    'audio.lua',
-    'drawing.lua',
-    'game.lua',
-    'input.lua',
-    'shader.lua',
-    'maths.lua',
-    'sprite.lua',
-    'object.lua',
-    'ttable.lua',
-    'task.lua',
-    'nnetwork.lua',
-    'menu.lua',
-    'fx.lua',
-    'assets/Marksman.ttf',
-    'assets/EffortsPro.ttf',
-    'assets/sheet.png',
-    'palswap.shader'
-  })
-end
+--if CASTLE_PREFETCH then
+--  CASTLE_PREFETCH({
+--    'client.lua',
+--    'server.lua',
+--    'audio.lua',
+--    'drawing.lua',
+--    'game.lua',
+--    'input.lua',
+--    'shader.lua',
+--    'maths.lua',
+--    'sprite.lua',
+--    'object.lua',
+--    'ttable.lua',
+--    'task.lua',
+--    'nnetwork.lua',
+--    'menu.lua',
+--    'fx.lua',
+--    'assets/Marksman.ttf',
+--    'assets/EffortsPro.ttf',
+--    'assets/sheet.png',
+--    'palswap.shader'
+--  })
+--end
 
 
 require("game")
@@ -52,6 +52,16 @@ end
 
 if not USE_CASTLE_CONFIG then
   function love.load(args)
+    if castle then
+      init_graphics(400,300)
+      init_audio()
+      init_shader_mgr()
+      init_input_mgr()
+      font("big")
+      pal()
+      color(23)
+    end
+  
     if args[1] == "server" then
       start_server()
     elseif args[1] == "client" then
@@ -65,12 +75,14 @@ if not USE_CASTLE_CONFIG then
 --      color(23)
       love.graphics.print("Running server.", 32, 32)
       
-      local y = 48
-      local n = #castle_log
-      while n > 0 do
-        love.graphics.print(castle_log[n], 48, y)
-        n = n-1
-        y = y+16
+      if not castle then
+        local y = 48
+        local n = #castle_log
+        while n > 0 do
+          love.graphics.print(castle_log[n], 48, y)
+          n = n-1
+          y = y+16
+        end
       end
     else
       love.graphics.print("Press 1 to launch local server.", 32, 32)

@@ -21,7 +21,9 @@ function init_graphics(w,h)
     ww,hh = 800, 600
     love.window.setMode(ww,hh,{resizable=true})
   end
-  scx, scy = ww/w, hh/h
+  local scale = min(flr(ww/w), flr(hh/h))
+  scx, scy = scale, scale
+  w, h = ceil(ww/scx), ceil(hh/scy)
   render_canvas=love.graphics.newCanvas(w,h)
   render_canvas:setFilter("nearest","nearest")
   
@@ -91,8 +93,8 @@ end
 
 
 function camera(x,y)
-  local x=x or 0
-  local y=y or 0
+  local x=x and round(x) or 0
+  local y=y and round(y) or 0
  
   love.graphics.origin()
   love.graphics.translate(-x+0.01,-y+0.01)
