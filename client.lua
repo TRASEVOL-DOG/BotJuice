@@ -74,10 +74,10 @@ function client.update(dt)
 
   if not client_init then
     castle_print("Client.update being called before client.load...")
-    --castle_print("Calling client.load from update.")
+    castle_print("Calling client.load from update.")
     --client.load = client_load_sav
     --network.async(function() client.load() end)
-    --client.load()
+    client.load()
     return
   end
   
