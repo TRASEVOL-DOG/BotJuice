@@ -114,6 +114,7 @@ function _draw()
   palt(13, true)
   
   draw_objects()
+  draw_taskprevision(selected)
   
   camera(0,0)
   
@@ -581,6 +582,50 @@ function draw_selected()
 --  end
 end
 
+function draw_taskprevision(s)
+  if not s then return end
+  if s.faction ~= my_faction then return end
+  
+  local steps = {}
+  local x,y = s.x, s.y
+  local do_step = function(task)
+    if not task then return end
+  
+    local dx,dy
+    if task.type == "walk_left"      then dx = -1
+    elseif task.type == "walk_right" then dx = 1
+    elseif task.type == "walk_up"    then dy = -1
+    elseif task.type == "walk_down"  then dy = 1
+    elseif task.type == "walk_to"    then x,y = task.to.x,task.to.y end
+    if dx or dy then
+      x = x + (dx or 0)
+      y = y + (dy or 0)
+    end
+    
+    local stp = steps[y*GRID_WN+x] or 0
+    
+    local c = faction_color[s.faction]
+    local sp = task_lib[task.type].sprite
+    local xx,yy = board_to_screen(x,y)
+    yy = yy - stp*3
+    
+    pal(0,23)
+    spr(sp, xx, yy+2)
+    pal(0,c)
+    spr(sp, xx, yy+1)
+    pal(0,0)
+    spr(sp, xx, yy)
+    
+    steps[y*GRID_WN+x] = stp+1
+  end
+  
+  do_step(s.task)
+  
+  for _,task in ipairs(s.task_queue) do
+    do_step(task)
+  end
+end
+
 function create_cursor()
   local s = {
     animt   = 0,
@@ -969,8 +1014,10 @@ function color_tile(x, y, faction)
   b_d.faction = faction
   faction_tiles[faction] = faction_tiles[faction]+1
 
-  update_tilesprite(x, y, faction, true)
-  faction_pal()
+  if not server_only then
+    update_tilesprite(x, y, faction, true)
+    faction_pal()
+  end
   
   if server_only then
     server_board[y][x] = faction

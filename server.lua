@@ -104,21 +104,21 @@ function server.update(dt)
   delta_time = dt
   dt30f = dt*30
   
-  local syss = {"audio", "graphics", "video", "window"}
-  --local syss = {}
-  local syssav = {}
-  for sys in all(syss) do
-    syssav[sys], love[sys] = love[sys], nil
-  end
+--  local syss = {"audio", "graphics", "video", "window"}
+--  --local syss = {}
+--  local syssav = {}
+--  for sys in all(syss) do
+--    syssav[sys], love[sys] = love[sys], nil
+--  end
 
   
   --update_game()
   _update(dt)
   
   
-  for sys in all(syss) do
-    love[sys] = syssav[sys]
-  end
+--  for sys in all(syss) do
+--    love[sys] = syssav[sys]
+--  end
   
   server_only = false
   
