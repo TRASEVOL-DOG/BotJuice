@@ -37,7 +37,7 @@ require("audio")
 require("nnetwork")
 
 ROLE = nil
-USE_CASTLE_CONFIG = false--(castle ~= nil)
+USE_CASTLE_CONFIG = (castle ~= nil)
 require("server")
 require("client")
 
