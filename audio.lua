@@ -3,32 +3,16 @@
 
 function init_audio()
   local music_list={
---    theme= "Cyanotype_loop.ogg"
+--  name = "file.ext",
   }
  
   local sfx_list={
---    shootorder= "shootorder.ogg",
---    shoot=           "shoot.ogg",
---    enemyshoot=  "enemshoot.ogg",
---    boost=           "boost.ogg",
---    helix=           "helix.ogg",
---    hole=             "hole.ogg",
---    levelup=       "levelup.ogg",
---    boom1=           "boom1.ogg",
---    boom2=           "boom2.ogg",
---    boom3=           "boom3.ogg",
---    scrap=           "scrap.ogg",
---    save=             "save.ogg",
---    gameover=     "gameover.ogg",
---    select=         "select.ogg",
---    confirm=       "confirm.ogg",
---    slider=      "sliderset.ogg",
---    dog=               "dog.ogg"
+--  name = "file.ext",
   }
   
   musics={}
   sfxs={}
-   
+  
   for n,f in pairs(music_list) do
     musics[n]=love.audio.newSource("assets/"..f,"stream")
     musics[n]:setLooping(true)
@@ -36,10 +20,6 @@ function init_audio()
   for n,f in pairs(sfx_list) do
     sfxs[n]=love.audio.newSource("assets/sfx/"..f,"static")
   end
- 
-  --sfx_vol=100
-  --music_vol=0--100
-  --master_vol=100
   
   sfx_volume(100)
   music_volume(60)
@@ -49,19 +29,26 @@ function init_audio()
 end
 
 
-function sfx(name,x,y,pitch)
+function sfx(name,x,y,pitch,volume)
   if server_only then return end
 
   local s=sfxs[name]
-  local x,y=x or 0, y or 0
-  local k=200
-  x,y=(x-cam.x)/k,(y-cam.y)/k
+  if not s then return end
   
   if pitch then
     s:setPitch(pitch)
   end
   
-  s:setPosition(x,y,1)
+  if volume then
+    s:setVolume(volume/100 * sfx_vol/100)
+  end
+  
+  if x and y then
+    local k=50
+    local scrnw,scrnh = screen_size()
+    x,y=(x-cam.x-scrnw/2)/k,(y-cam.y-scrnh/2)/k
+    s:setPosition(x,y,1)
+  end
   
   if s:isPlaying() then
     s:seek(0)
@@ -83,7 +70,9 @@ function music(name)
     return
   end
   
-  love.audio.play(musics[name])
+  local m = musics[name]
+  if not m then return end
+  love.audio.play(m)
 end
 
 function music_lowpass(enable)
@@ -145,3 +134,4 @@ function master_volume(v)
   
   master_vol=v
 end
+

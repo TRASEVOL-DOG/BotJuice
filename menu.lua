@@ -10,11 +10,14 @@ function init_menu_system()
     return
   end
   
+  menu_linespace={}
+  menu_positions={}
+  
   local l=define_menus()
   
   menus={}
   for n,m in pairs(l) do
-    menus[n]=init_menu(m)
+    menus[n]=init_menu(m, n)
   end
   
   curmenu=nil
@@ -25,7 +28,7 @@ function init_menu_system()
 end
 
 
-function init_menu(l)
+function init_menu(l, name)
   local m={}
   
   local maxw=0
@@ -39,19 +42,19 @@ function init_menu(l)
     
     if n.typ=="button" then
       n.w=#n.name*6+8
-      n.h=16
+      n.h=14
     elseif n.typ=="slider" then
       n.slidmax=o[4] or 1
       n.slidmin=o[5] or 0
       n.slidw=o[6] or 64
       n.slidv=n.call()
       n.w=max(#n.name*6+8,n.slidw+8)
-      n.h=32
+      n.h=26
     elseif n.typ=="text_field" then
       n.mlen = o[4] or 24
       n.txt = o[5] or ""
       n.w = max(#n.name*6, n.mlen*6)+8
-      n.h = 32
+      n.h = 28
     end
     
     maxw=max(maxw,n.w+4)
@@ -59,7 +62,7 @@ function init_menu(l)
     add(m,n)
   end
   
-  m.linespace=16
+  m.linespace = menu_linespace[name] or 14
   
   m.h=toth+(#m-1)*m.linespace
   m.w=maxw+32
@@ -69,6 +72,13 @@ function init_menu(l)
 end
 
 function update_menu(x,y)
+  if not x then
+    local scrnw,scrnh = screen_size()
+    local pos = menu_positions[curmenu] or {x = 0.5, y = 0.5}
+    x = pos.x * scrnw
+    y = pos.y * scrnh
+  end
+
   menuchange=max(menuchange-0.01,0)
   
   if not curmenu then return end
@@ -84,7 +94,7 @@ function update_menu(x,y)
         oy=oy+o.h+m.linespace
         if cury<oy then
           if m.chosen~=o then
-            sfx("select")
+           sfx("menu_select")
           end
           m.chosen=o
           break
@@ -95,7 +105,7 @@ function update_menu(x,y)
     if mouse_btn(0) and m.chosen and menuchange==0 then
       local o=m.chosen
       if o.typ=="button" and mouse_btnp(0) then
-        sfx("confirm")
+       sfx("menu_confirm")
         o.call()
       elseif o.typ=="slider" then
         local v
@@ -105,13 +115,13 @@ function update_menu(x,y)
         v=round(v)
         
         if v~=o.slidv or mouse_btnp(0) then
-          sfx("slider")
+          sfx("menu_slider")
         end
         
         o.call(v)
         o.slidv=v
       elseif o.typ=="text_field" and mouse_btnp(0) then
-        sfx("confirm")
+       sfx("menu_confirm")
         if (menulock) then
           menulock = false
           love.keyboard.setTextInput(false)
@@ -125,7 +135,7 @@ function update_menu(x,y)
     if m.chosen and m.chosen.typ == "text_field" then
       if menulock then
         if btnp(8) or btnp(7) then
-          sfx("confirm")
+          sfx("menu_confirm")
           menulock = false
           love.keyboard.setTextInput(false)
         end
@@ -135,42 +145,51 @@ function update_menu(x,y)
 end
 
 function draw_menu(x,y)
+  if not x then
+    local scrnw,scrnh = screen_size()
+    local pos = menu_positions[curmenu] or {x = 0.5, y = 0.5}
+    x = pos.x * scrnw
+    y = pos.y * scrnh
+  end
+
   if not curmenu then return end
   m=menus[curmenu]
+  
+  local c0,c1,c2 = 0,2,3
   
   y=y-m.h/2
   
   font("big")
   for i,o in ipairs(m) do
-    ofx=16*cos(t*0.5+i*0.1)
+    ofx=8*cos(t*0.15+i*0.15)
     
     if o.typ=="button" then
-      draw_text(o.name,x+ofx,y+o.h*0.5-1)
+      draw_text(o.name,x+ofx,y+o.h*0.5+2, 1, c0, c1, c2)
     elseif o.typ=="slider" then
-      draw_text(o.name,x+ofx,y+o.h*0.25-1)
+      draw_text(o.name,x+ofx,y+o.h*0.25+2, 1, c0, c1, c2)
       
-      local x1,x2,y=x-o.slidw/2,x+o.slidw/2,y+o.h*0.95
-      rect(x1-1,y-2.5,x2+1,y+1,25)
-      line(x1,y-1,x2,y-1,21)
-      line(x1,y,x2,y,22)
+      local x1,x2,y=x-o.slidw/2,x+o.slidw/2,y+o.h*1+1
+      rectfill(x1-1,y-2,x2,y+2,c2)
+      line(x1,y,x2-1,y,c1)
+      line(x1,y-1,x2-1,y-1,c0)
       
       local x=x1+(o.slidv/(o.slidmax-o.slidmin))*o.slidw
       local r=4
-      color(25)
+      color(c2)
       circfill(x,y-2,r)
       circfill(x,y+1,r)
       circfill(x-1,y-1,r)
       circfill(x+1,y-1,r)
       circfill(x-1,y,r)
       circfill(x+1,y,r)
-      circfill(x,y,r,22)
-      circfill(x,y-1,r,21)
+      circfill(x,y,r,c1)
+      circfill(x,y-1,r,c0)
       
       font("small")
-      draw_text(o.slidv,x,y-13)
+      draw_text(o.slidv,x,y-13, 1, c0, c1, c2)
       font("big")
     elseif o.typ=="text_field" then
-      draw_text(o.name,x+ofx,y+o.h*0.25-1)
+      draw_text(o.name,x+ofx,y+o.h*0.25+2, 1, c0, c1, c2)
       local txt = o.txt
       if o == m.chosen then
         if menulock then
@@ -181,15 +200,15 @@ function draw_menu(x,y)
       else
         txt = "\""..txt.."\""
       end
-      draw_text(txt,x,y+o.h*0.75-1)
+      draw_text(txt,x,y+o.h*0.75+2, 1, c0, c1, c2)
     end
     
     if o==m.chosen then
       local x1,y1,x2,y2=x-m.w/2-1,y,x+m.w/2,y+o.h+6
-      rect(x1,y1+1,x2,y2+1,22)
-      rect(x1,y1,x2,y2,21)
-      rect(x1-1,y1-1,x2+1,y2+2,25)
-      rect(x1+1,y1+2,x2-1,y2-1,25)
+      rect(x1,y1+1,x2,y2+1,c1)
+      rect(x1,y1,x2,y2,c0)
+      rect(x1-1,y1-1,x2+1,y2+2,c2)
+      rect(x1+1,y1+2,x2-1,y2-1,c2)
     end
     
     y=y+o.h+m.linespace
@@ -205,6 +224,18 @@ function menu(name)
   
   curmenu=name
   menuchange=0.1
+end
+
+function querry_menu()
+  return curmenu
+end
+
+function menu_position(name,x,y)
+  menu_positions[name] = {x=x, y=y}
+end
+
+function set_menu_linespace(name, space) -- to call inside define_menus()
+  menu_linespace[name] = space
 end
 
 function menu_back()

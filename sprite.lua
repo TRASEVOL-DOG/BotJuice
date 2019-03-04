@@ -139,6 +139,7 @@ anim_info={
   }
 }
 
+
 function init_sprite_mgr()
   sprite={}
   init_spritesheets(files)
@@ -159,6 +160,7 @@ function init_sprite_mgr()
   sprite_tilesize(8,8)
   spritesheet("sprites")
 end
+
 
 
 function refresh_spritesheets()
@@ -247,6 +249,58 @@ function sspr(sx,sy,sw,sh,dx,dy,dw,dh,r,cx,cy)
   set_shader()
 end
 
+
+function draw_spr_outline(s,x,y,w,h,outline_c,r,flipx,flipy,cx,cy)
+  local w=w or 1
+  local h=h or 1
+  local r=r or 0
+  local flipx=flipx and -1 or 1
+  local flipy=flipy and -1 or 1
+  local cx=(cx or 0.5)*w*sprite.tw
+  local cy=(cy or 0.5)*h*sprite.th
+  
+  local sx=s%sprite.nw*sprite.tw
+  local sy=flr(s/sprite.nw)*sprite.th
+  
+  local quad=love.graphics.newQuad(sx,sy,w*8,h*8,sprite.sheet:getDimensions())
+  
+  all_colors_to(outline_c)
+  plt_shader()
+  love.graphics.draw(sprite.sheet,quad,x-1,y,r*2*math.pi,flipx,flipy,cx,cy)
+  love.graphics.draw(sprite.sheet,quad,x+1,y,r*2*math.pi,flipx,flipy,cx,cy)
+  love.graphics.draw(sprite.sheet,quad,x,y-1,r*2*math.pi,flipx,flipy,cx,cy)
+  love.graphics.draw(sprite.sheet,quad,x,y+1,r*2*math.pi,flipx,flipy,cx,cy)
+  set_shader()
+  all_colors_to()
+end
+
+function draw_spr_outlined(s,x,y,w,h,outline_c,r,flipx,flipy,cx,cy)
+  local w=w or 1
+  local h=h or 1
+  local r=r or 0
+  local flipx=flipx and -1 or 1
+  local flipy=flipy and -1 or 1
+  local cx=(cx or 0.5)*w*sprite.tw
+  local cy=(cy or 0.5)*h*sprite.th
+  
+  local sx=s%sprite.nw*sprite.tw
+  local sy=flr(s/sprite.nw)*sprite.th
+  
+  local quad=love.graphics.newQuad(sx,sy,w*8,h*8,sprite.sheet:getDimensions())
+  
+  all_colors_to(outline_c)
+  plt_shader()
+  love.graphics.draw(sprite.sheet,quad,x-1,y,r*2*math.pi,flipx,flipy,cx,cy)
+  love.graphics.draw(sprite.sheet,quad,x+1,y,r*2*math.pi,flipx,flipy,cx,cy)
+  love.graphics.draw(sprite.sheet,quad,x,y-1,r*2*math.pi,flipx,flipy,cx,cy)
+  love.graphics.draw(sprite.sheet,quad,x,y+1,r*2*math.pi,flipx,flipy,cx,cy)
+  set_shader()
+  all_colors_to()
+  plt_shader()
+  love.graphics.draw(sprite.sheet,quad,x,y,r*2*math.pi,flipx,flipy,cx,cy)
+  set_shader()
+end
+
 function draw_anim(x,y,object,state,t,r,flipx,flipy)
   local state=state or "only"
   local flipx=flipx and -1 or 1
@@ -297,8 +351,21 @@ function draw_anim_outlined(x,y,object,state,t,outline_c,r,flipx,flipy)
   love.graphics.draw(info.sheet,quad,x,y+1,r*2*math.pi,flipx,flipy,info.cx,info.cy)
   set_shader()
   all_colors_to()
+  plt_shader()
   love.graphics.draw(info.sheet,quad,x,y,r*2*math.pi,flipx,flipy,info.cx,info.cy)
+  set_shader()
 end
+
+function anim_step(object, state, t)
+ local info=anim_info[object][state]
+ 
+ local v=flr(t/info.dt%#info.sprites)
+ local k=flr((t/info.dt)/#info.sprites)
+ 
+ return v,(t%info.dt<0.01),k
+end
+
+
 
 function draw_frame(s, xa, ya, xb, yb, stretch)
   local tw,th,nw,nh = sprite_tilesize()
@@ -342,6 +409,7 @@ function draw_frame(s, xa, ya, xb, yb, stretch)
 --  spr(s+nw*2,   xa,    yb-th, 1, 1, 0, false, false, 0, 0)
 --  spr(s+nw*2+2, xb-tw, yb-th, 1, 1, 0, false, false, 0, 0)
 end
+
 
 
 function init_spritesheets(files)

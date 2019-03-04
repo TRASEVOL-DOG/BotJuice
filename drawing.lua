@@ -14,6 +14,7 @@ function init_graphics(w,h)
   }
   
   local ww,hh
+  local ow,oh = w,h
   local scx,scy
   if castle or network then
     ww,hh = love.graphics.getDimensions()
@@ -27,7 +28,7 @@ function init_graphics(w,h)
   render_canvas=love.graphics.newCanvas(w,h)
   render_canvas:setFilter("nearest","nearest")
   
-  love.window.setTitle("~ Bot Juice?? ~")
+  love.window.setTitle(window_title or "~ Untitled ~")
   
   init_palette()
   
@@ -47,8 +48,8 @@ function init_graphics(w,h)
   graphics.scrn_h = h
   graphics.scrn_scalex = scx
   graphics.scrn_scaley = scy
-  graphics.scrn_setw = w
-  graphics.scrn_seth = h
+  graphics.scrn_setw = ow
+  graphics.scrn_seth = oh
   graphics.camx = 0
   graphics.camy = 0
   graphics.collock = false
@@ -338,11 +339,11 @@ end
 
 function all_colors_to(c)
   if c then
-    for i=0,#palette-1 do
+    for i=0,#palette do
       pal(i,c)
     end
   else
-    for i=0,#palette-1 do
+    for i=0,#palette do
       pal(i,i)
     end
   end
@@ -543,6 +544,24 @@ function mail24_palette()
     {120, 132, 171},
     {178, 188, 194},
     {255, 255, 255}
+  }
+end
+
+function scorched_palette()
+  return {
+[0]={0x59, 0x08, 0x2f},
+    {0xa1, 0x25, 0x38},
+    {0xde, 0x60, 0x49},
+    {0xf0, 0xec, 0xd5}
+  }
+end
+
+function sunscorched_palette()
+  return {
+[0]={0x40, 0x1e, 0x2e},
+    {0xab, 0x35, 0x35},
+    {0xff, 0x83, 0x4a},
+    {0xff, 0xff, 0xa6}
   }
 end
 
