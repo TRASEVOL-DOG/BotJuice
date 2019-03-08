@@ -11,7 +11,8 @@ function init_network()
       unit = 1,
       building = 2,
       buildingresource = 3,
-      buildingunit = 4
+      buildingunit = 4,
+      res = 5
     }
   
     update_ids = {}
@@ -124,6 +125,8 @@ function sync_entity(id, data)
   if not s then
     if data.type == 1 then
       s = create_unit(data.x, data.y, data.faction, id)
+    elseif data.type == 5 then
+      s = create_resource(data.x, data.y, data.rate, id)
     else
       local produce = ({[3] = "resource", [4] = "unit"})[data.type]
       s = create_building(data.x, data.y, produce, data.faction, id)
@@ -136,21 +139,25 @@ function sync_entity(id, data)
     end
   end
   
-  s.hp = data.hp
-  
-  if data.task ~= 0 and not same_task(data.task, s.task) then
-    s.task = copy_task(data.task)
+  if data.type == 5 then
+    s.hoard = data.hoard
+  else
+    s.hp = data.hp
+    
+    if data.task ~= 0 and not same_task(data.task, s.task) then
+      s.task = copy_task(data.task)
+    end
+    s.task_t = data.task_t + delay
+    
+    s.task_queue = {}
+    for i,t in pairs(data.task_queue) do
+      s.task_queue[i] = copy_task(t)
+    end
   end
-  s.task_t = data.task_t + delay
   
 --  if data.next_task ~= 0 and not same_task(data.next_task, s.task_queue[1]) then
 --    assign_task(s, copy_task(data.next_task), false)
 --  end
-  
-  s.task_queue = {}
-  for i,t in pairs(data.task_queue) do
-    s.task_queue[i] = copy_task(t)
-  end
   
 --  if data.next_task ~= 0 then
 --    debuggg = data.next_task.type..(data.next_task.path and (" : "..#data.next_task.path) or "")
@@ -181,7 +188,6 @@ function server_input()
   
   
 end
-
 
 function server_output()
 --  if not server then
@@ -215,10 +221,15 @@ function server_output()
     ss.task_t = s.task_t
     ss.task = simplify_task(s.task)
     --ss.next_task = simplify_task(s.task_queue[1])
-    ss.task_queue = {}
-    for i,t in pairs(s.task_queue) do
-      ss.task_queue[i] = simplify_task(t)
+    
+    if s.task_queue then
+      ss.task_queue = {}
+      for i,t in pairs(s.task_queue) do
+        ss.task_queue[i] = simplify_task(t)
+      end
     end
+    
+    ss.hoard = s.hoard
     
     server_entities[id] = ss
   end

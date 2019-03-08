@@ -10,131 +10,20 @@ files={
 }
 
 anim_info={
-  ship={
-    rotate={
-      sheet="sprites",
-      dt=1/14,
-      sprites={19,18,17,16,16,17,18,19,18,17,16,16,17,18}
+  unit={
+    idle={
+      sheet   = "sprites",
+      dt      = 1,
+      sprites = {64},
+      w       = 2,
+      h       = 2
     },
-    fire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={256, 257, 258, 259},
-      cx=7,
-      cy=3.5
-    },
-    bfire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={260, 261, 262, 263, 264, 265},
-      cx=7,
-      cy=3.5
-    }
-  },
-  
-  mediumship={
-    rotate={
-      sheet="sprites",
-      dt=1/18,
-      w=2,
-      h=2,
-      sprites={40, 38, 36, 34, 32, 32, 34, 36, 38, 40, 38, 36, 34, 32, 32, 34, 36, 38}
-    },
-    fire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={256, 257, 258, 259},
-      cx=7,
-      cy=3.5
-    },
-    bfire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={260, 261, 262, 263, 264, 265},
-      cx=7,
-      cy=3.5
-    }
-  },
-  
-  bigship={
-    rotate={
-      sheet="sprites",
-      dt=1/26,
-      w=2,
-      h=2,
-      sprites={76,74,72,70,68,66,64,64,66,68,70,72,74,76,74,72,70,68,66,64,64,66,68,70,72,74}
-    },
-    fire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={256, 257, 258, 259},
-      cx=7,
-      cy=3.5
-    },
-    bfire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={260, 261, 262, 263, 264, 265},
-      cx=7,
-      cy=3.5
-    }
-  },
-  
-  hugeship={
-    rotate={
-      sheet="sprites",
-      dt=1/30,
-      w=3,
-      h=3,
-      sprites={150, 147, 144, 108, 105, 102, 99, 96, 96, 99, 102, 105, 108, 144, 147, 150, 147, 144, 108, 105, 102, 99, 96, 96, 99, 102, 105, 108, 144, 147}
-    },
-    fire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={256, 257, 258, 259},
-      cx=7,
-      cy=3.5
-    },
-    bfire={
-      sheet="sprites",
-      dt=0.02,
-      sprites={260, 261, 262, 263, 264, 265},
-      cx=7,
-      cy=3.5
-    }
-  },
-  
-  helixship={
-    only={
-      sheet="sprites",
-      dt=0.02,
-      w=8,
-      h=4,
-      cx=32,
-      cy=22,
-      sprites={128,136}
-    }
-  },
-  skull={
-    only={
-      sheet="sprites",
-      dt=0.02,
-      w=2,
-      h=2,
-      cx=8,
-      cy=8,
-      sprites={224, 238, 224, 224, 224, 226, 228, 230, 232, 234, 236, 238, 238}
-    }
-  },
-  crown={
-    only={
-      sheet="sprites",
-      dt=0.025,
-      w=2,
-      h=1,
-      cx=8,
-      cy=4,
-      sprites={196, 198, 200, 202, 204, 206, 212, 214, 216, 218}
+    idling={
+      sheet   = "sprites",
+      dt      = 0.05,
+      sprites = {72, 74, 76, 78, 64, 66, 68, 66, 64, 70, 72},
+      w       = 2,
+      h       = 2
     }
   }
 }

@@ -3,13 +3,13 @@ task_lib = {
   ["walk"] = {
     t = 0.5,
     show_time = true,
-    sprite = 175,
+    sprite = 164,
     
     task_done = function(s, task)
       local pos = task.path[1]
       board[s.y][s.x].unit = nil
       s.x, s.y = pos.x, pos.y
-      color_tile(s.x, s.y, s.faction)
+      --color_tile(s.x, s.y, s.faction)
     end,
     
     start_task = function(s, task)
@@ -25,7 +25,13 @@ task_lib = {
         return true
       end
       
-      s.task = new_task("walk", {path = {npos}})
+      local dx = npos.x - s.x
+      local dy = npos.y - s.y
+      local dirs = {["-10"] = "walk_left", ["10"] = "walk_right", ["0-1"] = "walk_up", ["01"] = "walk_down"}
+      local ntask = dirs[""..dx..dy]
+      s.task = new_task(ntask)
+--      s.task = new_task("walk", {path = {npos}})
+
       table.remove(task.path, 1)
       
       if #task.path > 0 then
@@ -51,9 +57,20 @@ task_lib = {
       end
 
       do_remove_task = false
-      task.type = "walk"
-      task.to = nil
-      task.path = way
+      if server_only then
+        task.type = "walk"
+        task.to = nil
+        task.path = way
+      else
+        task.path = way
+        task_lib.walk.start_task(s, task)
+--        local dx = way[1].x - s.x
+--        local dy = way[1].y - s.y
+--        local dirs = {["-10"] = "walk_left", ["10"] = "walk_right", ["0-1"] = "walk_up", ["01"] = "walk_down"}
+--        local ntask = dirs[""..dx..dy]
+--        s.task = new_task(ntask)
+        return true
+      end
 
       return false
     end
@@ -65,16 +82,11 @@ task_lib = {
     sprite = 160,
     
     condition = function(s, task)
-      if s.x <= 0 then return false end
-      local b_d = board[s.y][s.x-1]
-      return not (b_d.wall or b_d.unit or (b_d.building and b_d.building.faction ~= s.faction))
+      return condition_walk_dir(s,task,-1,0)
     end,
     
     task_done = function(s, task)
-      board[s.y][s.x].unit = nil
-      s.x = s.x-1
-      board[s.y][s.x].unit = s
-      color_tile(s.x, s.y, s.faction)
+      done_walk_dir(s,task,-1,0)
     end,
   },
   
@@ -84,16 +96,11 @@ task_lib = {
     sprite = 161,
     
     condition = function(s, task)
-      if s.x >= GRID_W-1 then return false end
-      local b_d = board[s.y][s.x+1]
-      return not (b_d.wall or b_d.unit or (b_d.building and b_d.building.faction ~= s.faction))
+      return condition_walk_dir(s,task,1,0)
     end,
     
     task_done = function(s, task)
-      board[s.y][s.x].unit = nil
-      s.x = s.x+1
-      board[s.y][s.x].unit = s
-      color_tile(s.x, s.y, s.faction)
+      done_walk_dir(s,task,1,0)
     end,
   },
   
@@ -103,16 +110,11 @@ task_lib = {
     sprite = 162,
     
     condition = function(s, task)
-      if s.y <= 0 then return false end
-      local b_d = board[s.y-1][s.x]
-      return not (b_d.wall or b_d.unit or (b_d.building and b_d.building.faction ~= s.faction))
+      return condition_walk_dir(s,task,0,-1)
     end,
     
     task_done = function(s, task)
-      board[s.y][s.x].unit = nil
-      s.y = s.y-1
-      board[s.y][s.x].unit = s
-      color_tile(s.x, s.y, s.faction)
+      done_walk_dir(s,task,0,-1)
     end,
   },
   
@@ -122,17 +124,46 @@ task_lib = {
     sprite = 163,
     
     condition = function(s, task)
-      if s.y >= GRID_H-1 then return false end
-      local b_d = board[s.y+1][s.x]
-      return not (b_d.wall or b_d.unit or (b_d.building and b_d.building.faction ~= s.faction))
+      return condition_walk_dir(s,task,0,1)
     end,
     
     task_done = function(s, task)
-      board[s.y][s.x].unit = nil
-      s.y = s.y+1
-      board[s.y][s.x].unit = s
-      color_tile(s.x, s.y, s.faction)
+      done_walk_dir(s,task,0,1)
     end,
+  },
+  
+  
+  ["juice"] = {
+    t = 0.5,
+    show_time = true,
+    cost = 1,
+    sprite = 169,
+    
+    condition = function(s, task)
+      local b_d = board[s.y][s.x]
+      return (b_d.faction ~= s.faction)
+    end,
+    
+    task_done = function(s, task)
+      color_tile(s.x, s.y, s.faction)
+    end
+  },
+  
+  ["duplicate"] = {
+    t = 5,
+    show_time = true,
+    cost = 30,
+    sprite = 170,
+    
+    --condition = function(s, task)
+    --  local b_d = board[s.y][s.x]
+    --  return (b_d.faction ~= s.faction)
+    --end,
+    
+    task_done = function(s, task)
+      --color_tile(s.x, s.y, s.faction)
+      create_unit(s.x, s.y, s.faction)
+    end
   },
   
   
@@ -197,10 +228,11 @@ task_lib = {
     
     condition = function(s, task)
       local b_d = board[s.y][s.x]
-      return (b_d.building == nil and not b_d.wall)
+      return not (b_d.building or b_d.wall or b_d.resource)
     end,
     
     task_done = function(s, task)
+      color_tile(s.x, s.y, s.faction)
       create_building(s.x, s.y, nil, s.faction)
       add_shake(1)
     end
@@ -214,10 +246,11 @@ task_lib = {
 
     condition = function(s, task)
       local b_d = board[s.y][s.x]
-      return (b_d.building == nil and not b_d.wall)
+      return not (b_d.building or b_d.wall or b_d.resource)
     end,
     
     task_done = function(s, task)
+      color_tile(s.x, s.y, s.faction)
       create_building(s.x, s.y, task.produce, s.faction)
       add_shake(3)
     end
@@ -304,16 +337,20 @@ function assign_task(s, task, in_queue)
   if not task then return false end
   
   local info = task_lib[task.type]
---  if (not info.condition) or info.condition(s, task) then
-    if in_queue then
-      add(s.task_queue, task)
-    else
-      s.task_queue = {task}
+
+  if info.cost then
+    if faction_res[s.faction] < info.cost then
+      return false
     end
---    return true
---  else
---    return false
---  end
+    
+    faction_res[s.faction] = faction_res[s.faction] - info.cost
+  end
+  
+  if in_queue then
+    add(s.task_queue, task)
+  else
+    s.task_queue = {task}
+  end
 end
 
 function new_task(type, info)
@@ -343,14 +380,22 @@ function copy_task(task)
 end
 
 function clear_task_queue(s)
-  s.task_queue = {}
+  while cancel_last_task(s) do end
 end
 
 function cancel_last_task(s)
   local n = #s.task_queue
   if n > 0 then
+    local info = task_lib[s.task_queue[n].type]
+    if info.cost then -- refund
+      faction_res[s.faction] = faction_res[s.faction] + info.cost
+    end
+    
     table.remove(s.task_queue, n)
+    return true
   end
+  
+  return false
 end
 
 function is_task_possible(s, task)
@@ -379,5 +424,24 @@ function same_task(ta, tb)
     return (ta.target == tb.target)
   elseif ta.type == "build_prod" then
     return (ta.produce == tb.produce)
+  end
+end
+
+
+function condition_walk_dir(s,task,dx,dy)
+  if s.x+dx < 0 or s.x+dx >= GRID_WN or s.y+dy < 0 or s.y+dy >= GRID_HN then return false end
+  local b_d = board[s.y+dy][s.x+dx]
+  return not (b_d.wall or b_d.unit or (b_d.building and b_d.building.faction ~= s.faction))
+end
+
+function done_walk_dir(s,task,dx,dy)
+  board[s.y][s.x].unit = nil
+  s.x = s.x+dx
+  s.y = s.y+dy
+  local b_d = board[s.y][s.x]
+  b_d.unit = s
+  
+  if b_d.resource then
+    harvest_resource(b_d.resource, s)
   end
 end

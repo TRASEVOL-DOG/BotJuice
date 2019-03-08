@@ -27,6 +27,9 @@ GRID_H = GRID_HN*TILE_H
 GRID_X = 400-GRID_W-8
 GRID_Y = 150-GRID_H/2
 
+UI_X = 8
+UI_Y = 12
+
 faction_color = {15, 3, 12, 6}
 
 mini_menu = nil
@@ -66,20 +69,6 @@ function _init()
 --  init_task_sys()
   
   init_game()
-  
-  if server_only then
-    create_unit(3,5,1)
-    create_unit(5,3,1)
-    
-    create_unit(GRID_WN-3,5,2)
-    create_unit(GRID_WN-5,3,2)
-    
-    create_unit(3,GRID_HN-5,3)
-    create_unit(5,GRID_HN-3,3)
-    
-    create_unit(GRID_WN-3,GRID_HN-5,4)
-    create_unit(GRID_WN-5,GRID_HN-3,4)
-  end
 end
 
 network_t = 0
@@ -131,8 +120,13 @@ end
 function _on_resize()
   local scrnw, scrnh = screen_size()
 
-  GRID_X = scrnw-GRID_W-8
-  GRID_Y = scrnh/2-GRID_H/2
+  local x = flr(scrnw/2-400/2)
+  
+  UI_X = x+8
+  UI_Y = 12
+  
+  GRID_X = x+400-GRID_W-8
+  GRID_Y = flr(scrnh/2-GRID_H/2)
 
   init_control_ui()
   refresh_control_ui()
@@ -142,6 +136,25 @@ end
 
 function update_unit(s)
   s.animt = s.animt + delta_time
+  
+  if s.state == "idling" then
+    local a,b,c = anim_step("unit", "idling", s.animt)
+    if c > 0 then
+      s.state = "idle"
+    end
+  end
+  
+  s.blinkt = s.blinkt - delta_time
+  if s.blinkt < 0 then
+    s.state = "idling"
+    s.animt = 0
+    if selected == s then
+      s.blinkt = 0.5
+    else
+      s.blinkt = 1+rnd(1)
+    end
+  end
+  
   update_task(s)
   
   board[s.y][s.x].unit = s
@@ -288,7 +301,8 @@ function draw_unit(s, x,y)
 --  circfill(x,y,3,faction_color[s.faction])
 --  circfill(x,y,1,23)
   faction_pal(s.faction)
-  spr(80, x, y, 2, 1)
+  draw_anim(x, y-5, "unit", s.state, s.animt)
+--  spr(80, x, y, 2, 1)
   faction_pal()
   
   local y = y-6
@@ -308,21 +322,22 @@ function create_unit(tx,ty,faction,id)
   end
 
   local s = {
-    animt       = 0,
-    type        = "unit",
-    name        = "unit",
-    state       = "idle",
-    x           = tx,
-    y           = ty,
-    task        = nil,
-    task_t      = 0,
-    task_queue  = {},
-    maxhp       = 18,
-    faction     = faction or 1,
-    update      = update_unit,
-    draw        = draw_unit,
-    die         = destroy_unit,
-    regs        = {"to_draw2", "to_update", "unit", "task_doer", "unit"..faction}
+    animt      = 0,
+    blinkt     = 0,
+    type       = "unit",
+    name       = "unit",
+    state      = "idle",
+    x          = tx,
+    y          = ty,
+    task       = nil,
+    task_t     = 0,
+    task_queue = {},
+    maxhp      = 18,
+    faction    = faction or 1,
+    update     = update_unit,
+    draw       = draw_unit,
+    die        = destroy_unit,
+    regs       = {"to_draw2", "to_update", "unit", "task_doer", "unit"..faction}
   }
   
   s.hp = s.maxhp
@@ -397,21 +412,21 @@ function create_building(x, y, produce, faction, id)
   if not id and not server_only then return end
 
   local s = {
-    animt       = 0,
-    type        = "building",
-    produce     = produce,
-    state       = "idle",
-    x           = x,
-    y           = y,
-    task        = nil,
-    task_t      = 0,
-    task_queue  = {},
-    maxhp       = produce and 36 or 45,
-    faction     = faction or 1,
-    update      = update_building,
-    draw        = draw_building,
-    die         = destroy_building,
-    regs        = {"to_update", "to_draw1", "building", "task_doer"}
+    animt      = 0,
+    type       = "building",
+    produce    = produce,
+    state      = "idle",
+    x          = x,
+    y          = y,
+    task       = nil,
+    task_t     = 0,
+    task_queue = {},
+    maxhp      = produce and 36 or 45,
+    faction    = faction or 1,
+    update     = update_building,
+    draw       = draw_building,
+    die        = destroy_building,
+    regs       = {"to_update", "to_draw1", "building", "task_doer"}
   }
   
   s.hp = s.maxhp
@@ -463,6 +478,73 @@ function destroy_building(s)
   
   castle_print("Building [id:"..s.id.." - faction:"..s.faction.."] died.")
 end
+
+
+
+function update_resource(s)
+  s.prodt = s.prodt - delta_time
+  if s.prodt < 0 and s.hoard < 99 then
+    s.hoard = s.hoard + 1
+    s.prodt = s.prodt + s.prod
+    
+    local u = board[s.y][s.x].unit
+    if u then
+      harvest_resource(s, u)
+    end
+  end
+end
+
+function draw_resource(s)
+  x,y = board_to_screen(s.x, s.y)
+  
+  spr(34+flr(s.prodt*8)%4, x, y)
+
+  font("small")
+  draw_text(""..s.hoard, x, y-8, 1, 0, 22, 23)
+end
+
+function harvest_resource(s, harvester)
+  local fac = harvester.faction
+  faction_res[fac] = faction_res[fac] + s.hoard
+  
+  local x,y = board_to_screen(s.x, s.y)
+  create_floatingtxt(x, y-3, "+"..s.hoard, faction_color[fac])
+  
+  s.hoard = 0
+end
+
+function create_resource(x, y, rate_per_sec, id)
+  local prod = 1/(rate_per_sec or 1)
+
+  local s = {
+    type   = "res",
+    x      = x,
+    y      = y,
+    prod   = prod,
+    prodt  = prod,
+    hoard  = 0,
+    update = update_resource,
+    draw   = draw_resource,
+    regs   = {"to_update", "to_draw2"}
+  }
+  
+  local b_d = board[y][x]
+  b_d.resource = s
+  
+  if id then
+    entities[id], s.id = s, id
+    entity_id = max(entity_id, id+1)
+  else
+    entities[entity_id], s.id, entity_id = s, entity_id, entity_id + 1
+  end
+  
+  register_object(s)
+  
+  castle_print("Resource point [id:"..s.id.."] was created.")
+  
+  return s
+end
+
 
 
 
@@ -596,7 +678,8 @@ function draw_taskprevision(s)
     elseif task.type == "walk_right" then dx = 1
     elseif task.type == "walk_up"    then dy = -1
     elseif task.type == "walk_down"  then dy = 1
-    elseif task.type == "walk_to"    then x,y = task.to.x,task.to.y end
+    elseif task.type == "walk_to"    then x,y = task.to.x,task.to.y
+    elseif task.type == "walk"    then x,y = task.path[#task.path].x, task.path[#task.path].y end
     if dx or dy then
       x = x + (dx or 0)
       y = y + (dy or 0)
@@ -777,18 +860,18 @@ function init_control_ui()
     end
   end
 
-  local x = 8
-  local y = 86
+  local x = UI_X
+  local y = UI_Y + 69
   local scrnw,scrnh = screen_size()
   local xb = GRID_X - 8
   local midx = lerp(x, xb, 0.5)
 
   local w,h = 32, 24
   select_buttons = {
-    create_button(x,    y,     w, h, nil, {"prev", "unit"}, function() select_next_entity("unit", true) end, 'q'),
-    create_button(xb-w, y,     w, h, nil, {"next", "unit"}, function() select_next_entity("unit") end, 'e'),
-    create_button(x,    y+h+4, w, h, nil, {"prev", "build."}, function() select_next_entity("building", true) end, 'z'),
-    create_button(xb-w, y+h+4, w, h, nil, {"next", "build."}, function() select_next_entity("building") end, 'x')
+    create_button(x,    y+h/2,     w, h, nil, {"prev", "unit"}, function() select_next_entity("unit", true) end, 'q'),
+    create_button(xb-w, y+h/2,     w, h, nil, {"next", "unit"}, function() select_next_entity("unit") end, 'e'),
+--    create_button(x,    y+h+4, w, h, nil, {"prev", "build."}, function() select_next_entity("building", true) end, 'z'),
+--    create_button(xb-w, y+h+4, w, h, nil, {"next", "build."}, function() select_next_entity("building") end, 'x')
   }
 end
 
@@ -815,32 +898,53 @@ function select_next_entity(ty, prev)
   end
 end
 
+holding = {}
 function refresh_control_ui(s)
   eradicate_group("control_ui")
   
   if not s then return end -- /?\
   if s.faction ~= my_faction then return end
   
-  local x = 8
-  local y = 142
+  local x = UI_X
+  local y = UI_Y + 118
   local scrnw,scrnh = screen_size()
   local xb = GRID_X - 8
   local midx = lerp(x, xb, 0.5)
   
   if s.type == "unit" then
+    local walk = function(dir)
+      client_add_task(s, "walk_"..dir)
+      if holding.build_wall then
+        client_add_task(s, "build_wall")
+      elseif holding.juice then
+        client_add_task(s, "juice")
+      end
+    end
+  
     local w,h = 16, 16
-    create_button(x+w/2+1, y, w, h, 162, nil, function() client_add_task(s, "walk_up") end, 'w', "control_ui")
-    create_button(x, y+h+2, w, h, 160, nil, function() client_add_task(s, "walk_left") end, 'a', "control_ui")
-    create_button(x+w+2, y+h+2, w, h, 161, nil, function() client_add_task(s, "walk_right") end, 'd', "control_ui")
-    create_button(x+w/2+1, y+2*h+4, w, h, 163, nil, function() client_add_task(s, "walk_down") end, 's', "control_ui")
+    create_button(x+w/2+1, y, w, h, 162, nil, function() walk("up") end, 'w', "control_ui", "walk")
+    create_button(x, y+h+2, w, h, 160, nil, function() walk("left") end, 'a', "control_ui", "walk")
+    create_button(x+w+2, y+h+2, w, h, 161, nil, function() walk("right") end, 'd', "control_ui", "walk")
+    create_button(x+w/2+1, y+2*h+4, w, h, 163, nil, function() walk("down") end, 's', "control_ui", "walk")
     
     local x = x + w*2 + 8
-    local w = 72
-    create_button(x, y, w, h, 166, {"wall"}, function() client_add_task(s, "build_wall") end, 'r', "control_ui")
-    create_button(x, y+h+2, w, h, 166, {"$$$ factory"}, function() client_add_task(s, "build_prod", {produce = "resource"}) end, 'f', "control_ui")
-    create_button(x, y+2*h+4, w, h, 166, {"unit factory"}, function() client_add_task(s, "build_prod", {produce = "unit"}) end, 'v', "control_ui")
+    local w = 80
+    create_button(x, y, w, h, 169, {"juice"}, function() client_add_task(s, "juice") end, 'r', "control_ui", "juice")
+--    create_button(x, y, w, h, 166, {"wall"}, function() client_add_task(s, "build_wall") end, 'r', "control_ui")
+    create_button(x, y+h+2, w, h, 166, {"wall"}, function() client_add_task(s, "build_wall") end, 'f', "control_ui", "build_wall")
+--    create_button(x, y+h+2, w, h, 166, {"$$$ factory"}, function() client_add_task(s, "build_prod", {produce = "resource"}) end, 'f', "control_ui")
+    create_button(x, y+2*h+4, w, h, 170, {"duplicate"}, function() client_add_task(s, "duplicate") end, 'v', "control_ui", "duplicate")
+--    create_button(x, y+2*h+4, w, h, 166, {"unit factory"}, function() client_add_task(s, "build_prod", {produce = "unit"}) end, 'v', "control_ui")
     
-    local y = y+3*h+10
+    y = y+3*h+10
+    
+    x = x - 8 - 32
+    local w = 120
+    create_button(x, y, w, h, 174, {"cancel last task"}, function() client_add_task(s, -1) end, 'backspace', "control_ui")
+    create_button(x, y+h+2, w, h, 175, {"clear task queue"}, function() client_add_task(s, -2) end, 'tab', "control_ui")
+    
+    y = y + 2*h + 8
+    
     task_log_y = y
   elseif s.type == "building" then
     if s.produce == "unit" then
@@ -879,6 +983,10 @@ function update_button(s)
   
   if btnr(s.key) then
     s.callback()
+  end
+  
+  if s.task_type then
+    holding[s.task_type] = s.pressed
   end
 end
 
@@ -934,20 +1042,37 @@ function draw_button(s)
         draw_text(str, x, y, 0, 0)
         y = y + 8
       end
+      
+      if s.cost then
+        local x = s.x+s.w-2
+        local y = yy+hh/2 - 2
+        local str = s.cost.."$"
+        draw_text(str, x, y-1, 2, c)
+        draw_text(str, x, y, 2, 0)
+      end
     else
       local x = s.x + s.w/2
       local y = yy + hh/2
       
-      pal(0,c)
-      spr(s.sprite, x, y-1)
+      local sp = s.sprite
+      if s.task_type == "walk" then
+        if holding.build_wall then
+          sp = 166
+        elseif holding.juice then
+          sp = 169
+        end
+      end
+      
+      pal(0, c)
+      spr(sp, x, y-1)
       --pal(0,cl)
       --spr(s.sprite, x, y+1)
-      pal(0,0)
-      spr(s.sprite, x, y)
+      pal(0, 0)
+      spr(sp, x, y)
     end
   else
     local x = s.x + s.w/2
-    local y = yy + hh/2 - (#s.strs-1)*0.5*8 - 2
+    local y = yy + hh/2 - (#s.strs - 1) * 0.5 * 8 - 2
     for _,str in ipairs(s.strs) do
       draw_text(str, x, y-1, 1, c)
       --draw_text(str, x, y+1, 1, cl)
@@ -959,14 +1084,14 @@ function draw_button(s)
   if s.hovered and s.key_str then
     font("small")
     local x = lerp(8, GRID_X-8, 0.5)
-    local y = 80
-    local str = "['"..string.upper(s.key_str).."']"
+    local y = 77
+    local str = "Shortcut: ['"..string.upper(s.key_str).."']"
     draw_text(str, x, y+1, 1, 22)
     draw_text(str, x, y, 1, 20)
   end
 end
 
-function create_button(x, y, w, h, s, strs, callback, key, reg)
+function create_button(x, y, w, h, s, strs, callback, key, reg, task_type)
   local s = {
     x = x,
     y = y,
@@ -975,12 +1100,17 @@ function create_button(x, y, w, h, s, strs, callback, key, reg)
     sprite = s,
     strs = strs,
     callback = callback,
+    task_type = task_type,
     hovered = false,
     pressed = false,
     update = update_button,
     draw = draw_button,
     regs = {"to_update", "to_draw3", reg}
   }
+  
+  if task_type then
+    s.cost = task_lib[task_type].cost
+  end
   
   if key then
     s.key_str = key
@@ -1182,15 +1312,15 @@ end
 
 
 function draw_ui()
-  local x = 8
-  local y = 12
+  local x = UI_X
+  local y = UI_Y
   local scrnw,scrnh = screen_size()
   local xb = GRID_X - 8
   local midx = lerp(x, xb, 0.5)
   
   font("big")
   local strs = {}
-  for i=1,4 do
+  for i = 1,4 do
     strs[i] = (flr(faction_tiles[i]/(GRID_WN*GRID_HN)*1000)/10).."%"
   end
   local w = str_width(strs[1].." "..strs[2].." "..strs[3].." "..strs[4])
@@ -1222,7 +1352,7 @@ function draw_ui()
   
   y = y + 16
   line(midx - 48, y, midx+48, y, 22)
-  y = y + 40
+  y = y + 33
   
   if selected then
     selected:draw(midx,y)
@@ -1406,6 +1536,25 @@ function init_game()
   
   faction_res = {99,99,99,99}
   faction_tiles = {0,0,0,0}
+  
+  if server_only then
+    create_unit(3,5,1)
+    create_unit(5,3,1)
+    
+--    create_unit(7,4,1)
+--    create_unit(6,6,1)
+    
+    create_unit(GRID_WN-3,5,2)
+    create_unit(GRID_WN-5,3,2)
+    
+    create_unit(3,GRID_HN-5,3)
+    create_unit(5,GRID_HN-3,3)
+    
+    create_unit(GRID_WN-3,GRID_HN-5,4)
+    create_unit(GRID_WN-5,GRID_HN-3,4)
+    
+    create_resource(7,7)
+  end
 end
 
 grid_surf = nil
