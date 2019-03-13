@@ -20,7 +20,7 @@ function init_network()
     server.share[5] = {0,0,0,0}
     
     server.share[6] = {}
-    server.share[6]:__relevance(function(self, client_id) return {[client_id] = true} end)
+--    server.share[6]:__relevance(function(self, client_id) return {[client_id] = true} end)
   else
     update_id = 1
     client.home[2] = {}
@@ -93,6 +93,11 @@ function client_input(diff)
   if client.share[6] then
     my_faction = my_faction or client.share[6][client.id]
   end
+
+  countdown = client.share[9] or 10
+  if in_lobby and countdown <= 0 then
+    start_game()
+  end
 end
 
 function client_output()
@@ -101,6 +106,7 @@ function client_output()
 --  end
   
   client.home[1] = love.timer.getTime()
+  client.home[3] = my_name
 end
 
 function client_connect()
@@ -195,8 +201,12 @@ function server_output()
 --  end
   
   server.share[1] = {} -- timestamps
+  server.share[7] = {} -- names
+  server.share[8] = {} -- ready
   for id,h in pairs(server.homes) do
     server.share[1][id] = h[1]
+    server.share[7][id] = h[3]
+    server.share[8][id] = h[4]
   end
   
   server.share[2] = update_ids
@@ -235,6 +245,8 @@ function server_output()
   end
   
   server.share[5] = faction_res
+  
+  server.share[9] = countdown or 10
 end
 
 function server_new_client(id)
@@ -253,6 +265,11 @@ function process_task(data)
   local s = entities[data[1]]
   
   castle_print("Received task command: "..data[2])
+  
+  if in_lobby then
+    castle_print("Ignoring - game hasn't started yet.")
+    return
+  end
   
   if data[2] == -1 then
     cancel_last_task(s)
@@ -277,4 +294,24 @@ function simplify_task(task)
   return copy_task(task)
 end
 
+
+
+-- client.home = {
+--   [1] = local_time,
+--   [2] = ordered_tasks,
+--   [3] = my_name,
+--   [4] = ready
+-- }
+-- 
+-- server.share = {
+--   [1] = client_times,
+--   [2] = client_update_ids,
+--   [3] = board_data,
+--   [4] = game_entities,
+--   [5] = faction_resources,
+--   [6] = client_faction,
+--   [7] = client_names,
+--   [8] = client_readies,
+--   [9] = lobby_countdown
+-- }
 

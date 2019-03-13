@@ -22,6 +22,7 @@ require("lobby")
 
 
 mini_menu = nil
+my_name = "Helloo"
 
 function _init()
 --  fullscreen()
@@ -58,6 +59,8 @@ function _init()
 --  init_task_sys()
   
   init_game()
+  
+  game_timer = 256
   
   init_lobby()
 end
@@ -99,6 +102,8 @@ function _draw()
 --  spr(32, 32, 32, 2, 2)
   draw_debug()
   
+  palt(0, false)
+  palt(13, true)
   cursor:draw()
 end
 
@@ -141,6 +146,7 @@ function draw_game()
 --  draw_factioninfo()
 
   draw_ui()
+  draw_connection()
 end
 
 
@@ -259,13 +265,19 @@ function draw_debug()
   local scrnw, scrnh = screen_size()
   
   font("small")
+  
+  draw_text("debug: "..debuggg, scrnw, scrnh-8, 2, 21)
+end
+
+function draw_connection()
+  local scrnw, scrnh = screen_size()
+  
+  font("small")
   if client.connected then
     draw_text("Connected as client #"..client.id.." - ping: "..client.getPing().." - faction #"..(my_faction or "?"), scrnw-4, 1, 2, 21)
   else
     draw_text("Not connected", scrnw-4, 1, 2, 21)
   end
-  
-  draw_text("debug: "..debuggg, scrnw, scrnh-8, 2, 21)
 end
 
 
@@ -342,11 +354,11 @@ end
 
 function define_menus()
   local menus={
-    mainmenu={
-      {"Play", function() end},
-      {"Player Name", function(str) end, "text_field", 16, my_name},
+    lobby={
+      {"Name", function(str) my_name = str end, "text_field", 16, my_name},
+      {"Ready", set_self_ready},
       {"Settings", function() menu("settings") end},
-      {"Join the Castle Discord!", function() love.system.openURL("https://discordapp.com/invite/4C7yEEC") end}
+--      {"Join the Castle Discord!", function() love.system.openURL("https://discordapp.com/invite/4C7yEEC") end}
     },
     cancel={
       {"Go Back", function() connecting=false main_menu() end}
@@ -366,8 +378,14 @@ function define_menus()
     }
   }
   
+  set_menu_linespace("lobby", 11)
+  set_menu_linespace("settings", 11)
+  
+  menu_position("lobby",0.5,0.8)
+  menu_position("settings",0.5,0.7)
+  
   if not (castle or network) then
-    add(menus.mainmenu, {"Quit", function() love.event.push("quit") end})
+    add(menus.lobby, {"Quit", function() love.event.push("quit") end})
   end
   
   return menus

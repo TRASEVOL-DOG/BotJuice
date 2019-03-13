@@ -151,12 +151,12 @@ function refresh_control_ui(s)
   
   if s.type == "unit" then
     local walk = function(dir)
-      client_add_task(s, "walk_"..dir)
       if holding.build_wall then
         client_add_task(s, "build_wall")
       elseif holding.juice then
         client_add_task(s, "juice")
       end
+      client_add_task(s, "walk_"..dir)
     end
   
     local w,h = 16, 16

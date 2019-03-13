@@ -41,20 +41,20 @@ function init_menu(l, name)
     }
     
     if n.typ=="button" then
-      n.w=#n.name*6+8
-      n.h=14
+      n.w = #n.name*6+8
+      n.h = 14
     elseif n.typ=="slider" then
-      n.slidmax=o[4] or 1
-      n.slidmin=o[5] or 0
-      n.slidw=o[6] or 64
-      n.slidv=n.call()
-      n.w=max(#n.name*6+8,n.slidw+8)
-      n.h=26
+      n.slidmax = o[4] or 1
+      n.slidmin = o[5] or 0
+      n.slidw   = o[6] or 64
+      n.slidv   = n.call()
+      n.w       = max(#n.name*6+8,n.slidw+8)
+      n.h       = 26
     elseif n.typ=="text_field" then
       n.mlen = o[4] or 24
-      n.txt = o[5] or ""
-      n.w = max(#n.name*6, n.mlen*6)+8
-      n.h = 28
+      n.txt  = o[5] or ""
+      n.w    = max(#n.name*6, n.mlen*6)+8
+      n.h    = 28
     end
     
     maxw=max(maxw,n.w+4)
@@ -79,7 +79,7 @@ function update_menu(x,y)
     y = pos.y * scrnh
   end
 
-  menuchange=max(menuchange-0.01,0)
+  menuchange=max(menuchange-0.01*dt30f,0)
   
   if not curmenu then return end
   m=menus[curmenu]
@@ -87,7 +87,7 @@ function update_menu(x,y)
   local curx,cury=mouse_pos()
   
   if menulock or curx>x-m.w/2 and curx<x+m.w/2 and cury>y-m.h/2 and cury<y+m.h/2+m.linespace then
-    local oy=y-m.h/2+8
+    local oy=y-m.h/2
     
     if not menulock then
       for o in all(m) do
@@ -155,7 +155,7 @@ function draw_menu(x,y)
   if not curmenu then return end
   m=menus[curmenu]
   
-  local c0,c1,c2 = 0,2,3
+  local c0,c1,c2 = 0,22,23
   
   y=y-m.h/2
   
@@ -166,7 +166,7 @@ function draw_menu(x,y)
     if o.typ=="button" then
       draw_text(o.name,x+ofx,y+o.h*0.5+2, 1, c0, c1, c2)
     elseif o.typ=="slider" then
-      draw_text(o.name,x+ofx,y+o.h*0.25+2, 1, c0, c1, c2)
+      draw_text(o.name,x+ofx,y+o.h*0.25, 1, c0, c1, c2)
       
       local x1,x2,y=x-o.slidw/2,x+o.slidw/2,y+o.h*1+1
       rectfill(x1-1,y-2,x2,y+2,c2)
@@ -189,7 +189,7 @@ function draw_menu(x,y)
       draw_text(o.slidv,x,y-13, 1, c0, c1, c2)
       font("big")
     elseif o.typ=="text_field" then
-      draw_text(o.name,x+ofx,y+o.h*0.25+2, 1, c0, c1, c2)
+      draw_text(o.name,x+ofx,y+o.h*0.25+1, 1, c0, c1, c2)
       local txt = o.txt
       if o == m.chosen then
         if menulock then
@@ -200,7 +200,7 @@ function draw_menu(x,y)
       else
         txt = "\""..txt.."\""
       end
-      draw_text(txt,x,y+o.h*0.75+2, 1, c0, c1, c2)
+      draw_text(txt,x,y+o.h*0.75+1, 1, c0, c1, c2)
     end
     
     if o==m.chosen then
