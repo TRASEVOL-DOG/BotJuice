@@ -15,7 +15,8 @@ input={
     escape=7,
     ["return"]=8,
     v=9,
-    lshift=10
+    lshift=10,
+    n=11
   },
 
   btn_state      = {},

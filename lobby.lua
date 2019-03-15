@@ -2,6 +2,8 @@
 local countdown_t = 10
 
 function init_lobby()
+  if DEBUG_SKIP_LOBBY then return end
+
   in_lobby = true
   
   countdown = countdown_t
@@ -46,6 +48,9 @@ function draw_lobby()
   local scrnw,scrnh = screen_size()
   
   draw_title()
+  
+  draw_minimap(scrnw-8, 0.4*scrnh, 2, 1, true)
+  
   local x = 16
   local y = 64
   draw_lobby_connection(x, y)
@@ -70,6 +75,11 @@ function start_game()
   
   if server_only then
     castle_print("Starting game!")
+    close_server()
+  else
+    castle_print("Starting game!")
+    menu_back()
+    menu_back()
   end
 end
 
@@ -138,12 +148,57 @@ function draw_countdown(x, y)
   draw_text(""..max(flr(countdown), 0), x, y+12, 1, 0, 22, 23)
 end
 
+function draw_minimap(x, y, h_align, v_align, title)
+  local w = 3*GRID_WN
+  local h = 3*GRID_HN
+  
+  x = x - (h_align or 0) * w/2
+  y = y - (v_align or 0) * h/2
+  
+  if title then
+    font("small")
+    draw_text("Map Preview", x+w/2, y-10, 1, 0, 22, 23)
+  end
+  
+  local yy,xx = y,x
+
+  for j = 0,GRID_HN-1 do
+    local line = board[j]
+    for i = 0,GRID_WN-1 do
+      local b_d = line[i]
+      local c
+      if b_d.wall then
+        c = 20
+      elseif b_d.resource then
+        c = 22
+      elseif b_d.faction then
+        c = faction_color[b_d.faction]
+      else
+        c = 22
+      end
+      
+      local ca = c_lit[c]
+      local cb = c_lit[ca]
+      
+      --rectfill(xx, yy, xx+3, yy+3, c)
+      --pset(xx+1, yy, ca)
+      --pset(xx, yy+1, ca)
+      rectfill(xx, yy, xx+3, yy+3, ca)
+      pset(xx+2, yy+2, c)
+      pset(xx, yy, cb)
+      
+      xx = xx + 3
+    end
+    yy = yy + 3
+    xx = x
+  end
+end
 
 
 function update_lobby_server()
   local ready
   
-  if #server.homes >= 2 then
+  if client_count and client_count >= 2 then
     ready = true
     for _,ho in pairs(server.homes) do
       ready = ready and ho[4]

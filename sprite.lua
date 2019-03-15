@@ -5,23 +5,32 @@ require("maths")
 require("shader")
 require("drawing")
 
-files={
+files = {
   sprites = "assets/sheet.png"
 }
 
-anim_info={
-  unit={
-    idle={
+anim_info = {
+  unit = {
+    idle = {
       sheet   = "sprites",
       dt      = 1,
       sprites = {64},
       w       = 2,
       h       = 2
     },
-    idling={
+    idling = {
       sheet   = "sprites",
       dt      = 0.05,
       sprites = {72, 74, 76, 78, 64, 66, 68, 66, 64, 70, 72},
+      w       = 2,
+      h       = 2
+    }
+  },
+  resource = {
+    only = {
+      sheet   = "sprites",
+      dt      = 0.05,
+      sprites = {102, 100, 96, 96, 100, 100, 96, 96, 100, 100, 96, 96, 100, 100, 96, 96, 98, 96, 100, 102},
       w       = 2,
       h       = 2
     }
@@ -274,8 +283,8 @@ function draw_frame(s, xa, ya, xb, yb, stretch)
     sspr(sx+2*tw, sy+th, tw, th,
          xb-tw, ya+th, tw, yb-ya-2*th, 0, 0, 0)
   else
-    for x=xa,xb-th,th do
-      for y=ya,yb-th,th do
+    for x=xa+tw,xb-th,th do
+      for y=ya+tw,yb-th,th do
         spr(s+nw+1, x, y, 1, 1, 0, false, false, 0, 0)
       end
       
@@ -283,7 +292,7 @@ function draw_frame(s, xa, ya, xb, yb, stretch)
       spr(s+nw*2+1, x, yb-th, 1, 1, 0, false, false, 0, 0)
     end
     
-    for y=ya,yb-th,th do
+    for y=ya+th,yb-th,th do
       spr(s+nw,   xa,    y, 1, 1, 0, false, false, 0, 0)
       spr(s+nw+2, xb-tw, y, 1, 1, 0, false, false, 0, 0)
     end

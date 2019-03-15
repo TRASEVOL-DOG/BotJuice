@@ -461,6 +461,11 @@ function update_resource(s)
     s.hoard = s.hoard + 1
     s.prodt = s.prodt + s.prod
     
+    local x,y = board_to_screen(s.x, s.y)
+    for i=1,3 do
+      create_smoke(x, y, 1.5, 0.5+rnd(2), pick(faction_color),-0.15-rnd(0.2))
+    end
+    
     local u = board[s.y][s.x].unit
     if u then
       harvest_resource(s, u)
@@ -469,12 +474,13 @@ function update_resource(s)
 end
 
 function draw_resource(s)
-  x,y = board_to_screen(s.x, s.y)
+  local x,y = board_to_screen(s.x, s.y)
   
-  spr(34+flr(s.prodt*8)%4, x, y)
+--  spr(34+flr(s.prodt*8)%4, x, y)
+  draw_anim(x, y-4, "resource", nil, 1-s.prodt/s.prod)
 
   font("small")
-  draw_text(""..s.hoard, x, y-8, 1, 0, 22, 23)
+  draw_text(""..s.hoard, x, y-9, 1, 0, 22)
 end
 
 function harvest_resource(s, harvester)

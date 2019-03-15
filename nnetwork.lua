@@ -15,6 +15,8 @@ function init_network()
       res = 5
     }
   
+    faction_clients = {}
+  
     update_ids = {}
     server.share[4] = {}
     server.share[5] = {0,0,0,0}
@@ -98,6 +100,15 @@ function client_input(diff)
   if in_lobby and countdown <= 0 then
     start_game()
   end
+  
+--  if client.share[11] == 1 and not in_lobby then
+--    end_game("The other players dropped out!")
+--  end
+  
+  game_timer = client.share[10] - delay
+  if client.share[10] < 0 then
+    end_game("Time's up!")
+  end
 end
 
 function client_output()
@@ -110,11 +121,16 @@ function client_output()
 end
 
 function client_connect()
+  castle_print("Connected to server!")
   client.home[2] = {}
 end
 
 function client_disconnect()
-
+  castle_print("Disconnected from server!")
+  
+  if not in_lobby then
+    end_game("You were disconnected. :S")
+  end
 end
 
 function client_add_task(s, task_type, info)
@@ -170,7 +186,6 @@ function sync_entity(id, data)
 --  end
   
 end
-
 
 
 
@@ -247,18 +262,37 @@ function server_output()
   server.share[5] = faction_res
   
   server.share[9] = countdown or 10
+  server.share[10] = game_timer
+  server.share[11] = client_count
 end
 
+client_count = 0
 function server_new_client(id)
+  castle_print("New client: #"..id)
+  
+  client_count = client_count + 1
+
   update_ids[id] = 1
   
-  server.share[6][id] = (id-1)%4+1
+  local fac = 1
+  while faction_clients[fac] do
+    fac = fac + 1
+  end
   
-  castle_print("New client: #"..id)
+  faction_clients[fac] = id
+  server.share[6][id] = fac
 end
 
 function server_lost_client(id)
   castle_print("Client #"..id.." disconnected.")
+  
+  faction_clients[server.share[6][id] or 0] = nil
+  
+  client_count = client_count - 1
+  
+  if server_closed then
+    server.maxClients = client_count
+  end
 end
 
 function process_task(data)
@@ -268,6 +302,9 @@ function process_task(data)
   
   if in_lobby then
     castle_print("Ignoring - game hasn't started yet.")
+    return
+  elseif game_over then
+    castle_print("Ignoring - game is over.")
     return
   end
   
@@ -294,6 +331,14 @@ function simplify_task(task)
   return copy_task(task)
 end
 
+function close_server()
+  if DEBUG_KEEP_SERVER_OPEN then return end
+  
+  castle_print("Closing server.")
+
+  server.maxClients = client_count
+  server_closed = true
+end
 
 
 -- client.home = {
@@ -312,6 +357,8 @@ end
 --   [6] = client_faction,
 --   [7] = client_names,
 --   [8] = client_readies,
---   [9] = lobby_countdown
+--   [9] = lobby_countdown,
+--   [10]= game_timer,
+--   [11]= client_count
 -- }
 

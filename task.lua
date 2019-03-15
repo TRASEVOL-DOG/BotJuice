@@ -206,7 +206,7 @@ task_lib = {
   },
   
   ["hit"] = {
-    t = 0.5,
+    t = 0.4,
     shot_time = true,
     sprite = 165,
     

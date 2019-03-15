@@ -18,8 +18,12 @@ require("fx")
 require("game_elements")
 require("game_board")
 require("game_ui")
+require("gameover")
 require("lobby")
 
+GAME_TIME = 256
+DEBUG_SKIP_LOBBY = true
+--DEBUG_KEEP_SERVER_OPEN = true
 
 mini_menu = nil
 my_name = "Helloo"
@@ -60,7 +64,7 @@ function _init()
   
   init_game()
   
-  game_timer = 256
+  game_timer = GAME_TIME
   
   init_lobby()
 end
@@ -70,6 +74,10 @@ function _update(dt)
   if btnp(6) then
     refresh_spritesheets()
   end
+  
+  if btnp(11) then
+    show_connection = not show_connection
+  end
 
   t = t + dt
 
@@ -77,6 +85,8 @@ function _update(dt)
   
   if in_lobby then
     update_lobby()
+  elseif game_over then
+    update_gameover()
   else
     update_game()
   end
@@ -95,6 +105,8 @@ function _draw()
   
   if in_lobby then
     draw_lobby()
+  elseif game_over then
+    draw_gameover()
   else
     draw_game()
   end
@@ -125,8 +137,13 @@ end
 
 
 function update_game()
-
   update_objects()
+  
+  game_timer = game_timer - delta_time
+  
+  if server_only and game_timer < 0 then
+    end_game("Time's up!")
+  end
   
 end
 
@@ -270,11 +287,14 @@ function draw_debug()
 end
 
 function draw_connection()
+  if not show_connection then return end
+  
   local scrnw, scrnh = screen_size()
   
   font("small")
   if client.connected then
-    draw_text("Connected as client #"..client.id.." - ping: "..client.getPing().." - faction #"..(my_faction or "?"), scrnw-4, 1, 2, 21)
+    draw_text("Connected as client #"..client.id.." - ping: "..client.getPing().." - faction #"..(my_faction or "?"), scrnw-4, 1, 2, 21, 23, 23)
+--    draw_text("client #"..client.id.." - ping: "..client.getPing(), scrnw-4, 1, 2, 21)
   else
     draw_text("Not connected", scrnw-4, 1, 2, 21)
   end
@@ -311,6 +331,15 @@ function init_game()
   faction_tiles = {0,0,0,0}
   
   if server_only then
+    for j=-1,1 do
+      for i=-1,1 do
+        color_tile(4+i, 4+j, 1)
+        color_tile(GRID_WN-4+i, 4+j, 2)
+        color_tile(4+i, GRID_HN-4+j, 3)
+        color_tile(GRID_WN-4+i, GRID_HN-4+j, 4)
+      end
+    end
+    
     create_unit(3,5,1)
     create_unit(5,3,1)
     
@@ -370,19 +399,18 @@ function define_menus()
       {"Sfx Volume", sfx_volume,"slider",100},
       {"Back", menu_back}
     },
-    pause={
-      {"Resume", function() menu_back() end},
-      {"Restart", function() end},
-      {"Settings", function() menu("settings") end},
-      {"Back to Main Menu", main_menu},
+    gameover={
+      {"Go back to lobby", function() if castle then portal.parent:newChild(portal.path) else love.event.push("quit") end end}
     }
   }
   
   set_menu_linespace("lobby", 11)
   set_menu_linespace("settings", 11)
+  set_menu_linespace("gameover", 11)
   
   menu_position("lobby",0.5,0.8)
   menu_position("settings",0.5,0.7)
+  menu_position("gameover",0.5,0.9)
   
   if not (castle or network) then
     add(menus.lobby, {"Quit", function() love.event.push("quit") end})

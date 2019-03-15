@@ -11,32 +11,39 @@ function draw_ui()
   local midx = lerp(x, xb, 0.5)
   
   font("big")
-  local strs = {}
-  for i = 1,4 do
-    strs[i] = (flr(faction_tiles[i]/(GRID_WN*GRID_HN)*1000)/10).."%"
-  end
-  local w = str_width(strs[1].." "..strs[2].." "..strs[3].." "..strs[4])
   
-  local xx = midx - w/2
+  -- Timer
+  local str = max(ceil(game_timer), 0)..'" before end of game'
+  draw_text(str, GRID_X + GRID_W/2, 2, 1, 0, 22, 23)
+  
+  
+  -- Current scores
+  local strs = {}
+  local total_owned = 0
+  for i = 1,4 do
+    total_owned = total_owned + faction_tiles[i]
+  end
+  
   for i=1,4 do
     local c = faction_color[i]
-    draw_text2(strs[i], xx, y+(i%2)*8-4, 0, 0, c, c_lit[c])
+    local xx = midx + (i-2.5)*22
+    local n = flr((faction_tiles[i]/total_owned)*1000)/10
+    local str = n.."%"
     
-    xx = xx + str_width(strs[i].." ")
+    draw_text2(str, xx, y-(i%2)*12+6, 1, 0, c, c_lit[c])
   end
   
   y = y + 16
   line(midx - 48, y, midx+48, y, 22)
   y = y + 14
   
+  -- Available resources
   local fac = my_faction or 1
   local c = faction_color[fac]
   local cl,cd = c_lit[c], c_drk[c]
   
   xx = midx
-  draw_text2(faction_res[fac].." $", xx, y, 2, 0, c, cl)
-
-  draw_text2(" (+"..(group_size("res_building"..fac)*2).."$/s)", xx, y, 0, 0, c, cl)
+  draw_text2(faction_res[fac].." $", xx, y, 1, 0, c, cl)
   
   y = y + 14
   local n = group_size("unit"..fac)
@@ -46,6 +53,7 @@ function draw_ui()
   line(midx - 48, y, midx+48, y, 22)
   y = y + 33
   
+  -- Selected unit panel
   if selected then
     selected:draw(midx,y)
     
@@ -68,18 +76,29 @@ function draw_ui()
     --font("small")
     y = task_log_y+6
     function log_task(task)
-      local sp = task_lib[task.type].sprite
-      pal(0, 22) spr(sp, x+28, y+2+2)
-      pal(0, 21) spr(sp, x+28, y+2+1)
-      pal(0, 0)  spr(sp, x+28, y+2)
-    
-      draw_text2("  "..task.type.."()", x+24, y, 0, 0, 21, 22)
+      local info = task_lib[task.type]
+      local sp = info.sprite
+      pal(0, 22) spr(sp, x+12, y+2+2)
+      pal(0, 21) spr(sp, x+12, y+2+1)
+      pal(0, 0)  spr(sp, x+12, y+2)
+      
+      local str
+      if info.cost then
+        str = task.type.."( "..info.cost.."$ )"
+      else
+        str = task.type.."()"
+      end
+      
+      draw_text2(str, x+20, y, 0, 0, 21, 22)
       y = y + 12
     end
     
     if selected.task then
-      local anim = {'/','-','\\','|'}
-      draw_text2(anim[flr(t*10)%4+1], x+16, y, 1, 21, 22, 23)
+      --local anim = {'\\','|','/','-','>','|','<','-'}
+      --local anim = {'\\','|','/','-','>','|','>','-'}
+      local anim = {'>','|','>','-'}
+      local c = anim[flr(t*9)%#anim+1]
+      draw_text2(c, x+2, y, 1, 21, 22, 23)
       log_task(selected.task)
     end
     

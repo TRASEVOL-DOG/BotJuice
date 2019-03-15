@@ -205,10 +205,12 @@ function draw_menu(x,y)
     
     if o==m.chosen then
       local x1,y1,x2,y2=x-m.w/2-1,y,x+m.w/2,y+o.h+6
-      rect(x1,y1+1,x2,y2+1,c1)
-      rect(x1,y1,x2,y2,c0)
-      rect(x1-1,y1-1,x2+1,y2+2,c2)
-      rect(x1+1,y1+2,x2-1,y2-1,c2)
+    --  rect(x1,y1+1,x2,y2+1,c1)
+    --  rect(x1,y1,x2,y2,c0)
+    --  rect(x1-1,y1-1,x2+1,y2+2,c2)
+    --  rect(x1+1,y1+2,x2-1,y2-1,c2)
+      
+      draw_frame(332, x1-4, y1-4, x2+4, y2+4, true)
     end
     
     y=y+o.h+m.linespace

@@ -11,6 +11,7 @@ if CASTLE_PREFETCH then
     'game_elements.lua',
     'game_ui.lua',
     'game_board.lua',
+    'gameover.lua',
     'lobby.lua',
     'input.lua',
     'shader.lua',

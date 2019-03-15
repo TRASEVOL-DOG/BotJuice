@@ -189,9 +189,10 @@ end
 function update_tilesprite(x, y, faction, recursive)
   if server_only then return end
 
-  if faction < 0 then -- wall
+  if faction < 0 then -- board wall
     draw_to(flor_surf)
-    spr(31+irnd(2), 4+x*TILE_W, 4+y*TILE_H)
+    --spr(31+irnd(2), 4+x*TILE_W, 4+y*TILE_H)
+    update_tilesprite_hole(x, y, true)
     draw_to()
     return
   end
@@ -225,6 +226,41 @@ function update_tilesprite(x, y, faction, recursive)
   draw_to(flor_surf)
   faction_pal(faction)
   spr(16+n, x*TILE_W+4, y*TILE_H+4)
+  draw_to()
+end
+
+function update_tilesprite_hole(x, y, recursive)
+  if server_only then return end
+
+  local n = 0
+  
+  if recursive then
+    if x>0 then
+      local wll = board[y][x-1].wall
+      if wll then update_tilesprite_hole(x-1, y) n = n + 1 end
+    end
+    if x<GRID_WN-1 then
+      local wll = board[y][x+1].wall
+      if wll then update_tilesprite_hole(x+1, y) n = n + 2 end
+    end
+    if y>0 then
+      local wll = board[y-1][x].wall
+      if wll then update_tilesprite_hole(x, y-1) n = n + 4 end
+    end
+    if y<GRID_HN-1 then
+      local wll = board[y+1][x].wall
+      if wll then update_tilesprite_hole(x, y+1) n = n + 8 end
+    end
+  else
+    if x>0 and board[y][x-1].wall then n = n + 1 end
+    if x<GRID_WN-1 and board[y][x+1].wall then n = n + 2 end
+    if y>0 and board[y-1][x].wall then n = n + 4 end
+    if y<GRID_HN-1 and board[y+1][x].wall then n = n + 8 end
+  end
+  
+  draw_to(flor_surf)
+  faction_pal(faction)
+  spr(32+n, x*TILE_W+4, y*TILE_H+4)
   draw_to()
 end
 
