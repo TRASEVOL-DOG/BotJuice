@@ -502,10 +502,11 @@ function create_resource(x, y, rate_per_sec, id)
     y      = y,
     prod   = prod,
     prodt  = prod,
+    rate   = rate_per_sec,
     hoard  = 0,
     update = update_resource,
     draw   = draw_resource,
-    regs   = {"to_update", "to_draw2"}
+    regs   = {"to_update", "to_draw2", "resource"}
   }
   
   local b_d = board[y][x]

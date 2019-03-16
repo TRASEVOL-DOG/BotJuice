@@ -1,5 +1,5 @@
 
-local countdown_t = 10
+local countdown_t = 5
 
 function init_lobby()
   if DEBUG_SKIP_LOBBY then return end
@@ -75,6 +75,7 @@ function start_game()
   
   if server_only then
     castle_print("Starting game!")
+    activate_map()
     close_server()
   else
     castle_print("Starting game!")
@@ -145,7 +146,7 @@ function draw_countdown(x, y)
   
   font("big")
   draw_text("Game starts in", x, y, 1, 0, 22, 23)
-  draw_text(""..max(flr(countdown), 0), x, y+12, 1, 0, 22, 23)
+  draw_text(""..max(ceil(countdown), 0), x, y+12, 1, 0, 22, 23)
 end
 
 function draw_minimap(x, y, h_align, v_align, title)
@@ -170,7 +171,7 @@ function draw_minimap(x, y, h_align, v_align, title)
       if b_d.wall then
         c = 20
       elseif b_d.resource then
-        c = 22
+        c = faction_color[flr(love.timer.getTime()*4)%4+1]--22
       elseif b_d.faction then
         c = faction_color[b_d.faction]
       else

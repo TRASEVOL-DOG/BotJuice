@@ -22,7 +22,7 @@ require("gameover")
 require("lobby")
 
 GAME_TIME = 256
-DEBUG_SKIP_LOBBY = true
+--DEBUG_SKIP_LOBBY = true
 --DEBUG_KEEP_SERVER_OPEN = true
 
 mini_menu = nil
@@ -48,7 +48,8 @@ function _init()
     "res_building2",
     "res_building3",
     "res_building4",
-    "control_ui"
+    "control_ui",
+    "resource"
   )
 
   shkx,shky = 0,0
@@ -307,15 +308,9 @@ function init_game()
   board = {}
   if server_only then
     server_board = {}
-    gen_board()
+--    gen_board()
   else
-    for y = 0, GRID_HN-1 do
-      local line = {}
-      for x = 0, GRID_WN-1 do
-        line[x] = {}
-      end
-      board[y] = line
-    end
+    reset_board()
     
     init_control_ui()
     refresh_control_ui()
@@ -331,31 +326,32 @@ function init_game()
   faction_tiles = {0,0,0,0}
   
   if server_only then
-    for j=-1,1 do
-      for i=-1,1 do
-        color_tile(4+i, 4+j, 1)
-        color_tile(GRID_WN-4+i, 4+j, 2)
-        color_tile(4+i, GRID_HN-4+j, 3)
-        color_tile(GRID_WN-4+i, GRID_HN-4+j, 4)
-      end
-    end
-    
-    create_unit(3,5,1)
-    create_unit(5,3,1)
-    
---    create_unit(7,4,1)
---    create_unit(6,6,1)
-    
-    create_unit(GRID_WN-3,5,2)
-    create_unit(GRID_WN-5,3,2)
-    
-    create_unit(3,GRID_HN-5,3)
-    create_unit(5,GRID_HN-3,3)
-    
-    create_unit(GRID_WN-3,GRID_HN-5,4)
-    create_unit(GRID_WN-5,GRID_HN-3,4)
-    
-    create_resource(7,7)
+    load_new_map()
+--    for j=-1,1 do
+--      for i=-1,1 do
+--        color_tile(4+i, 4+j, 1)
+--        color_tile(GRID_WN-4+i, 4+j, 2)
+--        color_tile(4+i, GRID_HN-4+j, 3)
+--        color_tile(GRID_WN-4+i, GRID_HN-4+j, 4)
+--      end
+--    end
+--    
+--    create_unit(3,5,1)
+--    create_unit(5,3,1)
+--    
+----    create_unit(7,4,1)
+----    create_unit(6,6,1)
+--    
+--    create_unit(GRID_WN-3,5,2)
+--    create_unit(GRID_WN-5,3,2)
+--    
+--    create_unit(3,GRID_HN-5,3)
+--    create_unit(5,GRID_HN-3,3)
+--    
+--    create_unit(GRID_WN-3,GRID_HN-5,4)
+--    create_unit(GRID_WN-5,GRID_HN-3,4)
+--    
+--    create_resource(7,7)
   end
 end
 

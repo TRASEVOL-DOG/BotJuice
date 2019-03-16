@@ -22,10 +22,14 @@ function init_network()
     server.share[5] = {0,0,0,0}
     
     server.share[6] = {}
+    
+    server.share[12] = 1
 --    server.share[6]:__relevance(function(self, client_id) return {[client_id] = true} end)
   else
     update_id = 1
     client.home[2] = {}
+    
+    board_id = 0
   end
 end
 
@@ -45,9 +49,9 @@ function update_network()
 end
 
 
-
+reload_map = 0
 function client_input(diff)
-  debuggg = "getting stuff"
+--  debuggg = "getting stuff"
 --  if not (client and client.connected) then
 --    return
 --  end
@@ -56,14 +60,38 @@ function client_input(diff)
     local timestamp = client.share[1][client.id]
     if timestamp then
       delay = (love.timer.getTime() - timestamp) / 2
+    else
+      return
     end
+  else
+    return
   end
   
-  board_changes = diff[3]
+
+  if client.share[12] > board_id then
+    board_id = client.share[12]
+--    debuggg = "new_map"
+    reload_map = 5*delay
+    castle_print("Receiving new map...")
+  end
+  
+  local board_changes
+  if reload_map > 0 then
+    reload_map = reload_map - delta_time
+    if reload_map <= 0 then
+      reset_board()
+      board_changes = client.share[13]
+    end
+  else
+    board_changes = diff[13]
+  end
+  
+  
   if board_changes then
     for y,line in pairs(board_changes) do
       local b_line = board[y]
       for x,n in pairs(line) do
+        --b_line[x].wall = n == -1
         if n < 0 then
           b_line[x].wall = true
           update_tilesprite(x, y, -1)
@@ -71,6 +99,8 @@ function client_input(diff)
           color_tile(x, y, n)
         end
       end
+      
+      --debuggg = "getting map data"
     end
   end
   
@@ -226,7 +256,7 @@ function server_output()
   
   server.share[2] = update_ids
 
-  server.share[3] = server_board
+  server.share[13] = server_board
   
   local server_entities = server.share[4]
   for id,s in pairs(server_entities) do
@@ -255,6 +285,7 @@ function server_output()
     end
     
     ss.hoard = s.hoard
+    ss.rate = s.rate
     
     server_entities[id] = ss
   end
@@ -281,17 +312,33 @@ function server_new_client(id)
   
   faction_clients[fac] = id
   server.share[6][id] = fac
+  
+  if in_lobby then
+    load_new_map()
+  end
 end
 
 function server_lost_client(id)
   castle_print("Client #"..id.." disconnected.")
   
-  faction_clients[server.share[6][id] or 0] = nil
+  local fac = server.share[6][id] or 0
+  faction_clients[fac] = nil
+  server.share[6][id] = nil
+  
+  server.share[1][id] = nil
+  server.share[6][id] = nil
+  server.share[7][id] = nil
   
   client_count = client_count - 1
   
   if server_closed then
     server.maxClients = client_count
+  end
+  
+  if in_lobby then
+    load_new_map()
+  else
+    faction_color[fac] = 21
   end
 end
 
@@ -359,6 +406,7 @@ end
 --   [8] = client_readies,
 --   [9] = lobby_countdown,
 --   [10]= game_timer,
---   [11]= client_count
+--   [11]= client_count,
+--   [12]= board_id
 -- }
 
