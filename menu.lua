@@ -52,7 +52,7 @@ function init_menu(l, name)
       n.h       = 26
     elseif n.typ=="text_field" then
       n.mlen = o[4] or 24
-      n.txt  = o[5] or ""
+      n.txt  = n.call()
       n.w    = max(#n.name*6, n.mlen*6)+8
       n.h    = 28
     end
@@ -246,6 +246,20 @@ function menu_back()
     del(prevmenus,curmenu)
   else
     curmenu=nil
+  end
+end
+
+function menu_update_values(name)
+  local m = menus[name]
+  
+  if m then
+    for n in all(m) do
+      if n.typ == "slider" then
+        n.slidv   = n.call()
+      elseif n.typ == "text_field" then
+        n.txt  = n.call()
+      end
+    end
   end
 end
 

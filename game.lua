@@ -26,7 +26,7 @@ GAME_TIME = 256
 --DEBUG_KEEP_SERVER_OPEN = true
 
 mini_menu = nil
-my_name = "Helloo"
+my_name = "Hello!"
 
 function _init()
 --  fullscreen()
@@ -158,6 +158,12 @@ function draw_game()
   
   draw_objects()
   draw_taskprevision(selected)
+  
+  font("small")
+  for s in group("resource") do
+    local x,y = board_to_screen(s.x, s.y)
+    draw_text(""..s.hoard, x, y-9, 1, 0, 22, 23)
+  end
   
   camera(0,0)
   
@@ -359,6 +365,9 @@ end
 function faction_pal(faction, lit)
   if faction then
     local c = faction_color[faction]
+    
+    c = c * 1
+    
     if lit then
       pal(20, lighter(c,lit-1))
       pal(21, lighter(c,lit))
@@ -380,8 +389,9 @@ end
 function define_menus()
   local menus={
     lobby={
-      {"Name", function(str) my_name = str end, "text_field", 16, my_name},
+      {"Name", function(str) if str then my_name = str end return my_name end, "text_field", 16},
       {"Ready", set_self_ready},
+      {"Change color", demand_new_color},
       {"Settings", function() menu("settings") end},
 --      {"Join the Castle Discord!", function() love.system.openURL("https://discordapp.com/invite/4C7yEEC") end}
     },
@@ -389,14 +399,14 @@ function define_menus()
       {"Go Back", function() connecting=false main_menu() end}
     },
     settings={
-      {"Fullscreen", fullscreen},
+--      {"Fullscreen", fullscreen},
       {"Master Volume", master_volume,"slider",100},
       {"Music Volume", music_volume,"slider",100},
       {"Sfx Volume", sfx_volume,"slider",100},
       {"Back", menu_back}
     },
     gameover={
-      {"Go back to lobby", function() if castle then portal.parent:newChild(portal.path) else love.event.push("quit") end end}
+      {"Back to lobby", function() if castle then portal.parent:newChild(portal.path) else love.event.push("quit") end end}
     }
   }
   
@@ -404,12 +414,12 @@ function define_menus()
   set_menu_linespace("settings", 11)
   set_menu_linespace("gameover", 11)
   
-  menu_position("lobby",0.5,0.8)
-  menu_position("settings",0.5,0.7)
-  menu_position("gameover",0.5,0.9)
+  menu_position("lobby",0.5,0.75)
+  menu_position("settings",0.5,0.75)
+  menu_position("gameover",0.8,0.9)
   
   if not (castle or network) then
-    add(menus.lobby, {"Quit", function() love.event.push("quit") end})
+--    add(menus.lobby, {"Quit", function() love.event.push("quit") end})
   end
   
   return menus

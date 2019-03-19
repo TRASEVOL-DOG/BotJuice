@@ -75,15 +75,18 @@ function draw_floatingtxt(s)
 end
 
 function draw_explosion(s)
-  local c=({0,0,3,3,3,3,3,s.c,s.c})[flr(s.p+dt30f)]
-  local r=s.r+max(s.p-2,0)
+  local c=({0,0,23,23,23,23,23,s.c,s.c})[flr(s.p)+1]
+  local r=s.r+max(s.p/4-1,0)
   local foo
   if s.p<7 then foo=circfill
   else foo=circ end
   
   foo(s.x,s.y,r,c)
   
-  if s.p==1 then
+  s.p=s.p+1.5*dt30f
+  
+  local p = flr(s.p)
+  if p==1 and s.p%1 < 1.5*dt30f then
     if s.r>4 then
       for i=0,1 do
         local a,l=rnd(1),(0.8+rnd(0.4))*s.r
@@ -101,7 +104,6 @@ function draw_explosion(s)
     end
   end
   
-  s.p=s.p+1*dt30f
   if s.p>=8 then
     deregister_object(s)
   end
@@ -123,7 +125,7 @@ function create_floatingtxt(x,y,str,c)
     x=x,
     y=y,
     txt=str,
-    t=t,
+    t=0,
     c=c,
     update=update_floatingtxt,
     draw=draw_floatingtxt,
@@ -164,7 +166,7 @@ function create_smoke(x,y,spd,r,c,a)
     y=y,
     vx=spd*cos(a),
     vy=spd*sin(a),
-    r=r or 1+rnd(3),
+    r=r or rnd(3),
     c=c or (-1+irnd(2)),
     update=update_smoke,
     draw=draw_smoke,

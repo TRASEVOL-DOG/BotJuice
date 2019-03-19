@@ -210,6 +210,11 @@ task_lib = {
     shot_time = true,
     sprite = 165,
     
+    condition = function(s, task)
+      local target = entities[task.target]
+      return target and abs(target.x-s.x)+abs(target.y-s.y)<=1
+    end,
+    
     task_done = function(s, task)
       local target = entities[task.target]
       if (not target) or abs(target.x-s.x)+abs(target.y-s.y)>1 then
@@ -291,12 +296,18 @@ task_lib = {
 function update_task(s)
   if s.task then
     -- task progress
+    
     local info = task_lib[s.task.type]
+    
     s.task_t = s.task_t + delta_time
     if s.task_t >= info.t then
       info.task_done(s, s.task)
       s.task = nil
       s.task_t = s.task_t - info.t
+    end
+    
+    if s.task and s.task.type == "hit" and not info.condition(s, s.task) then
+      s.task = nil
     end
   end
   

@@ -1,6 +1,22 @@
 
+available_colors = {15, 3, 12, 6, 9, 18}
+faction_color = {21,21,21,21}
 
-faction_color = {15, 3, 12, 6}
+colors = {15, 18, 3, 6, 12}
+
+default_names = {
+  [15] = "Blueberry",
+  [18] = "Grape",
+  [3]  = "Strawberry",
+  [6]  = "Lemon",
+  [9]  = "Coconut",
+  [12] = "Lime"
+}
+
+is_default_name = { ["Hello!"] = true }
+for _,str in pairs(default_names) do
+  is_default_name[str] = true
+end
 
 
 function update_unit(s)
@@ -153,12 +169,31 @@ function get_path(ax, ay, bx, by, faction, s)
 end
 
 function do_damage(s, target)
-  target.hp = target.hp - (2+irnd(3))
+  target.hp = target.hp - (1+irnd(2))
   
-  if target.hp <= 0 then
+  if target.hp <= 0 and server_only then
     target:die()
-    add_shake(2)
+    
+    local fac = target.faction
+    if server_only and group_size("unit"..fac) == 0 then
+      local pos
+      for _,p in pairs(spawn_points) do
+        if p.fac == fac then pos = p break end
+      end
+      
+      if pos then
+        create_unit(pos.x, pos.y, fac)
+      end
+    end
+
     --color_tile(target.x, target.y, s.faction)
+  else
+    if #target.task_queue == 0 and target.type == "unit" then
+      assign_task(target, new_task("hit", {target = s.id}))
+    end
+    
+    local x, y = board_to_screen(target.x, target.y)
+    create_explosion(x, y, 6, faction_color[fac])
   end
 end
 
@@ -219,6 +254,13 @@ function create_unit(tx,ty,faction,id)
   else
     entities[entity_id], s.id, entity_id = s, entity_id, entity_id + 1
   end
+
+
+  local x,y = board_to_screen(s.x, s.y)
+  local c = faction_color[s.faction]
+  for i=1,16 do
+    create_smoke(x, y, 1.5, 0.5+rnd(2), pick{23, 23, c, c, c_drk[c], c_lit[c]})
+  end
   
   register_object(s)
   
@@ -228,6 +270,13 @@ function create_unit(tx,ty,faction,id)
 end
 
 function destroy_unit(s)
+  local x, y = board_to_screen(s.x, s.y)
+  create_explosion(x, y, 10, faction_color[s.faction])
+ 
+  add_shake(2)
+  
+  scorch_ground(s.x, s.y, s.faction)
+
   board[s.y][s.x].unit = nil
   entities[s.id] = nil
   
@@ -235,6 +284,11 @@ function destroy_unit(s)
   dead_ids[s.id] = true
   
   deregister_object(s)
+  
+  if selected == s then
+    selected = nil
+    refresh_control_ui()
+  end
   
   castle_print("Unit [id: "..s.id.." - faction: "..s.faction.."] died.")
 end
@@ -463,7 +517,7 @@ function update_resource(s)
     
     local x,y = board_to_screen(s.x, s.y)
     for i=1,3 do
-      create_smoke(x, y, 1.5, 0.5+rnd(2), pick(faction_color),-0.15-rnd(0.2))
+      create_smoke(x, y, 1.5, 0.5+rnd(2), pick(colors),-0.15-rnd(0.2))
     end
     
     local u = board[s.y][s.x].unit
@@ -479,18 +533,18 @@ function draw_resource(s)
 --  spr(34+flr(s.prodt*8)%4, x, y)
   draw_anim(x, y-4, "resource", nil, 1-s.prodt/s.prod)
 
-  font("small")
-  draw_text(""..s.hoard, x, y-9, 1, 0, 22)
+--  font("small")
+--  draw_text(""..s.hoard, x, y-9, 1, 0, 22, 23)
 end
 
 function harvest_resource(s, harvester)
+  if not server_only then return end
+  
   local fac = harvester.faction
   faction_res[fac] = faction_res[fac] + s.hoard
   
-  local x,y = board_to_screen(s.x, s.y)
-  create_floatingtxt(x, y-3, "+"..s.hoard, faction_color[fac])
-  
   s.hoard = 0
+  s.taker = fac
 end
 
 function create_resource(x, y, rate_per_sec, id)
@@ -506,6 +560,7 @@ function create_resource(x, y, rate_per_sec, id)
     hoard  = 0,
     update = update_resource,
     draw   = draw_resource,
+    die    = destroy_resource,
     regs   = {"to_update", "to_draw2", "resource"}
   }
   
@@ -526,3 +581,14 @@ function create_resource(x, y, rate_per_sec, id)
   return s
 end
 
+function destroy_resource(s)
+  board[s.y][s.x].resource = nil
+  entities[s.id] = nil
+  
+  s.dead = true
+  dead_ids[s.id] = true
+  
+  deregister_object(s)
+  
+  castle_print("Resource [id:"..s.id.."] was removed.")
+end

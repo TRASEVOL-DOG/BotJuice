@@ -226,10 +226,11 @@ function update_tilesprite(x, y, faction, recursive)
   draw_to(flor_surf)
   faction_pal(faction)
   spr(16+n, x*TILE_W+4, y*TILE_H+4)
+  faction_pal()
   draw_to()
 end
 
-function update_tilesprite_hole(x, y, recursive)
+function oupdate_tilesprite_hole(x, y, recursive)
   if server_only then return end
 
   local n = 0
@@ -271,6 +272,71 @@ function update_tilesprite_hole(x, y, recursive)
   draw_to()
 end
 
+function update_tilesprite_hole(x, y)
+  if server_only then return end
+
+  draw_to(flor_surf)
+  
+  palt(23, true)
+
+  local foo = function(xx,yy)
+    local n = 0
+    
+    if xx >= 0 and yy>=0 then
+      local b_d = board[yy][xx]
+      if b_d.wall then
+          n = n + 1
+      end
+    end
+    
+    xx = xx+1
+    if xx < GRID_WN and yy>=0 then
+      local b_d = board[yy][xx]
+      if b_d.wall then
+          n = n + 2
+      end
+    end
+    
+    xx = xx-1
+    yy = yy+1
+    if xx >= 0 and yy < GRID_HN then
+      local b_d = board[yy][xx]
+      if b_d.wall then
+          n = n + 4
+      end
+    end
+    
+    xx = xx+1
+    if xx < GRID_WN and yy < GRID_HN then
+      local b_d = board[yy][xx]
+      if b_d.wall then
+          n = n + 8
+      end
+    end
+
+    spr(32+n, xx*TILE_W+1, yy*TILE_H+1)
+  end
+  
+  foo(x-1, y-1)
+  foo(x, y-1)
+  foo(x-1, y)
+  foo(x, y)
+  
+  palt(23, false)
+
+  draw_to()
+end
+
+function scorch_ground(x, y, faction)
+  if server_only then return end
+  
+  draw_to(flor_surf)
+  faction_pal(faction)
+  spr(120, x*TILE_W+4, y*TILE_H+5, 2, 1)
+  faction_pal()
+  draw_to()
+end
+
 function screen_to_board(x,y)
   x = flr((x - GRID_X) / TILE_W)
   y = flr((y - GRID_Y) / TILE_H)
@@ -302,9 +368,9 @@ function init_board_rendering()
   for i = 1,GRID_HN-1 do
     spr(1, 4, 4+i*TILE_H)
     spr(2, 4+GRID_W, 4+i*TILE_H)
-    for j = 1,GRID_WN-1 do
-      spr(0, 4+j*TILE_W, 4+i*TILE_H)
-    end
+    --for j = 1,GRID_WN-1 do
+    --  spr(0, 4+j*TILE_W, 4+i*TILE_H)
+    --end
   end
   for j = 1,GRID_WN-1 do
     spr(3, 4+j*TILE_W, 4)
@@ -330,6 +396,7 @@ function init_board_rendering()
       if chance(5) then
         spr(8+irnd(7), 4+j*TILE_W, 4+i*TILE_H)
       end
+      spr(0, j*TILE_W+1, i*TILE_H+1)
     end
   end
   
@@ -375,7 +442,11 @@ function reset_board()
   faction_tiles = {0,0,0,0}
   init_board_rendering()
   
-  eradicate_group("resource")
+  for r in group("resource") do
+    board[r.y][r.x].resource = r
+  end
+  
+--  eradicate_group("resource")
 end
 
 spawn_points = {}
@@ -393,7 +464,11 @@ function load_new_map()
   -- incrementing server board_id
   server.share[12] = server.share[12] + 1
   
-  eradicate_group("resource")
+--  eradicate_group("resource")
+  for r in group("resource") do
+    r:die()
+  end
+
   spawn_points = {}
   res_points = {}
   

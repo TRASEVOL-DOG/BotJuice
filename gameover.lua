@@ -16,15 +16,30 @@ function end_game(reason)
     menu("gameover")
     
     total_score = 0
-    max_score = 0
+    max_score = -1
+    max_lscore = -1
     final_scores = {}
-    for id,fac in pairs(client.share[6]) do
+    --for id,fac in pairs(client.share[6]) do
+    for fac = 1,4 do
       local score = faction_tiles[fac]
       
       final_scores[fac] = score
       total_score = total_score + score
-      max_score = max(max_score, score)
+      
+      if score > max_lscore and faction_color[fac] ~= 21 then
+        max_lscore = score
+        winner = fac
+      end
+      
+      if score > max_score then
+        max_score = score
+      end
     end
+    
+    local c_id = client.share[14][winner]
+    win_col = faction_color[winner]
+    
+    winner_name = gameover_names[winner]
   end
 end
 
@@ -43,9 +58,9 @@ function draw_gameover()
 
   draw_gameover_message(scrnw/2, 0.05 * scrnh)
   
-  draw_gameover_stats(scrnw/2, 0.4 * scrnh)
+  draw_gameover_stats(scrnw/2, 0.5 * scrnh)
   
-  draw_minimap(scrnw/2, 0.65 * scrnh, 1, 1)
+  draw_minimap(scrnw * 0.25, 0.8 * scrnh, 1, 1)
   
   draw_menu()
   
@@ -54,10 +69,26 @@ end
 
 
 function draw_gameover_message(x, y)
+  y = y - 10
+
   font("big")
   local xx = x - str_width(gameover_str)/2
   for i=1,#gameover_str do
     local ch = gameover_str:sub(i,i)
+    local yy = y + 4.5*cos(-go_t+i*0.1)
+    
+    print(ch, xx, yy+1, 22)
+    print(ch, xx, yy, 0)
+  
+    xx = xx + str_width(ch)
+  end
+  
+  y = y + 20
+  local str = winner_name.." wins!"
+  
+  local xx = x - str_width(str)/2
+  for i=1,#str do
+    local ch = str:sub(i,i)
     local yy = y + 4.5*cos(-go_t+i*0.1)
     
     print(ch, xx, yy+1, 22)
@@ -89,7 +120,14 @@ function draw_gameover_stats(x, y)
       rectfill(xx, yy, xx+ww, y, c)
       line(xx, yy, xx+ww, yy, c_lit[c])
       
+      font("small")
+      local name = gameover_names[i]
+      if name then
+        draw_text(name, xx+ww/2, yy - 8, 1, 0, c, 23)
+      end
+      
       local per = flr(score/total_score*1000)/10
+      font("big")
       draw_text(per.."%", xx+ww/2, y + 6, 1, 0, c, 23)
       draw_text(score.." tiles", xx+ww/2, y + 18, 1, 0, c, 23)
     else

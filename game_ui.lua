@@ -55,7 +55,7 @@ function draw_ui()
   
   -- Selected unit panel
   if selected then
-    selected:draw(midx,y)
+--    selected:draw(midx,y)
     
     local w,h = 40, 40
     local sx,sy = board_to_screen(selected.x, selected.y)
@@ -159,7 +159,7 @@ holding = {}
 function refresh_control_ui(s)
   eradicate_group("control_ui")
   
-  if not s then return end -- /?\
+  if not s then return end
   if s.faction ~= my_faction then return end
   
   local x = UI_X

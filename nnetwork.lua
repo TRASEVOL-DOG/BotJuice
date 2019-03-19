@@ -16,6 +16,8 @@ function init_network()
     }
   
     faction_clients = {}
+    
+    color_demands = {}
   
     update_ids = {}
     server.share[4] = {}
@@ -24,10 +26,15 @@ function init_network()
     server.share[6] = {}
     
     server.share[12] = 1
+    
+    faction_color = {}
+    server.share[13] = faction_color
+    
 --    server.share[6]:__relevance(function(self, client_id) return {[client_id] = true} end)
   else
     update_id = 1
     client.home[2] = {}
+    client.home[5] = 0
     
     board_id = 0
   end
@@ -67,6 +74,35 @@ function client_input(diff)
     return
   end
   
+  if client.share[6] then
+    my_faction = my_faction or client.share[6][client.id]
+  end
+  
+  if client.share[13] then
+    for fac,c in pairs(client.share[13]) do
+      if faction_color[fac] ~= c then
+        faction_color[fac] = c
+        
+        if fac == my_faction then
+          if is_default_name[my_name] then
+            my_name = default_names[c]
+            menu_update_values("lobby")
+          end
+        end
+        
+        for y,line in pairs(client.share[3]) do
+          local b_line = board[y]
+          for x,n in pairs(line) do
+            if n == fac then
+              --color_tile(x, y, n)
+              update_tilesprite(x,y,n)
+            end
+          end
+        end
+      end
+    end
+  end
+  
 
   if client.share[12] > board_id then
     board_id = client.share[12]
@@ -80,10 +116,10 @@ function client_input(diff)
     reload_map = reload_map - delta_time
     if reload_map <= 0 then
       reset_board()
-      board_changes = client.share[13]
+      board_changes = client.share[3]
     end
   else
-    board_changes = diff[13]
+    board_changes = diff[3]
   end
   
   
@@ -111,7 +147,7 @@ function client_input(diff)
     end
   end
   
-  local entity_changes = diff[4]
+  local entity_changes = client.share[4]--diff[4]
   if entity_changes then
     for id,_ in pairs(entity_changes) do
       sync_entity(id, entity_data[id])
@@ -121,19 +157,15 @@ function client_input(diff)
   if client.share[5] then
     faction_res = copy_table(client.share[5])
   end
-  
-  if client.share[6] then
-    my_faction = my_faction or client.share[6][client.id]
-  end
 
   countdown = client.share[9] or 10
   if in_lobby and countdown <= 0 then
     start_game()
   end
   
---  if client.share[11] == 1 and not in_lobby then
---    end_game("The other players dropped out!")
---  end
+  if client.share[11] == 1 and not in_lobby then
+    end_game("The other players dropped out!")
+  end
   
   game_timer = client.share[10] - delay
   if client.share[10] < 0 then
@@ -170,6 +202,10 @@ function client_add_task(s, task_type, info)
   update_id = update_id + 1
 end
 
+function demand_new_color()
+  client.home[5] = client.home[5] + 1
+end
+
 function sync_entity(id, data)
   if dead_ids[id] then return end
 
@@ -192,7 +228,15 @@ function sync_entity(id, data)
   end
   
   if data.type == 5 then
+    if data.hoard > s.hoard then
+      s.prodt = s.prod
+    elseif data.hoard < s.hoard and data.taker then
+      debuggg = "!!!"
+      local x,y = board_to_screen(s.x, s.y)
+      create_floatingtxt(x, y-3, "+"..s.hoard, faction_color[data.taker])
+    end
     s.hoard = data.hoard
+    s.taker = data.taker
   else
     s.hp = data.hp
     
@@ -224,7 +268,6 @@ function server_input()
 --    return
 --  end
   
-
   for id,h in pairs(server.homes) do
     if h[2] then
       local u_id = update_ids[id]
@@ -234,9 +277,13 @@ function server_input()
       end
       update_ids[id] = u_id
     end
+    
+    if h[5] and h[5] > color_demands[id] then
+      local fac = server.share[6][id]
+      new_client_color(fac)
+      color_demands[id] = h[5]
+    end
   end
-  
-  
   
 end
 
@@ -256,7 +303,7 @@ function server_output()
   
   server.share[2] = update_ids
 
-  server.share[13] = server_board
+  server.share[3] = server_board
   
   local server_entities = server.share[4]
   for id,s in pairs(server_entities) do
@@ -286,6 +333,7 @@ function server_output()
     
     ss.hoard = s.hoard
     ss.rate = s.rate
+    ss.taker = s.taker
     
     server_entities[id] = ss
   end
@@ -295,6 +343,10 @@ function server_output()
   server.share[9] = countdown or 10
   server.share[10] = game_timer
   server.share[11] = client_count
+  
+  server.share[13] = faction_color
+  
+  server.share[14] = faction_clients
 end
 
 client_count = 0
@@ -313,6 +365,9 @@ function server_new_client(id)
   faction_clients[fac] = id
   server.share[6][id] = fac
   
+  color_demands[id] = 0
+  new_client_color(fac)
+  
   if in_lobby then
     load_new_map()
   end
@@ -326,8 +381,8 @@ function server_lost_client(id)
   server.share[6][id] = nil
   
   server.share[1][id] = nil
-  server.share[6][id] = nil
-  server.share[7][id] = nil
+--  server.share[7][id] = nil
+  server.share[8][id] = nil
   
   client_count = client_count - 1
   
@@ -337,6 +392,9 @@ function server_lost_client(id)
   
   if in_lobby then
     load_new_map()
+    
+    add(available_colors, faction_color[fac])
+    faction_color[fac] = 21
   else
     faction_color[fac] = 21
   end
@@ -378,6 +436,15 @@ function simplify_task(task)
   return copy_task(task)
 end
 
+function new_client_color(fac)
+  if faction_color[fac] and faction_color[fac] ~= 21 then
+    add(available_colors, faction_color[fac])
+  end
+  
+  faction_color[fac] = available_colors[1]
+  delat(available_colors, 1)
+end
+
 function close_server()
   if DEBUG_KEEP_SERVER_OPEN then return end
   
@@ -392,7 +459,8 @@ end
 --   [1] = local_time,
 --   [2] = ordered_tasks,
 --   [3] = my_name,
---   [4] = ready
+--   [4] = ready,
+--   [5] = color_demand
 -- }
 -- 
 -- server.share = {
@@ -407,6 +475,8 @@ end
 --   [9] = lobby_countdown,
 --   [10]= game_timer,
 --   [11]= client_count,
---   [12]= board_id
+--   [12]= board_id,
+--   [13]= faction_colors,
+--   [14]= faction_clients
 -- }
 

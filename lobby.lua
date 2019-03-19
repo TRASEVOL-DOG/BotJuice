@@ -47,7 +47,7 @@ function draw_lobby()
   
   local scrnw,scrnh = screen_size()
   
-  draw_title()
+  draw_title(scrnw/2 - 136/2,8)
   
   draw_minimap(scrnw-8, 0.4*scrnh, 2, 1, true)
   
@@ -81,13 +81,44 @@ function start_game()
     castle_print("Starting game!")
     menu_back()
     menu_back()
+
+    gameover_names = {}
+    for id,fac in pairs(client.share[14]) do
+      gameover_names[fac] = client.share[7][id]
+    end
   end
+  
 end
 
 
 
-function draw_title()
-
+function draw_title(x,y)
+  spritesheet("title")
+  palt(13, true)
+  
+  local wider = {[1] = true, [4] = true}
+  local offsets = {0,1,-1,0,0,0,-2,1}
+  
+  local s = 0
+  local xx = 0
+  for i = 1,8 do
+    local w = wider[i] and 3 or 2
+    local x = x + xx + offsets[i] + w*4
+    local y = y + 4.5 * cos(x/96 - love.timer.getTime()*0.75)
+    
+    if i == 4 and my_faction then
+      faction_pal(my_faction)
+    end
+    
+    spr(s, x, y + 16, w, 4)
+    
+    s = s + w
+    xx = xx + w*8 - 1
+  end
+  
+  faction_pal()
+  
+  spritesheet("sprites")
 end
 
 function draw_lobby_connection(x, y)
@@ -171,7 +202,7 @@ function draw_minimap(x, y, h_align, v_align, title)
       if b_d.wall then
         c = 20
       elseif b_d.resource then
-        c = faction_color[flr(love.timer.getTime()*4)%4+1]--22
+        c = colors[flr(love.timer.getTime()*4)%#colors+1]--22
       elseif b_d.faction then
         c = faction_color[b_d.faction]
       else
