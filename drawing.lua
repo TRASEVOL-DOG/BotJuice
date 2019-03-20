@@ -80,6 +80,7 @@ end
 
 function predraw()
   love.graphics.setCanvas(render_canvas)
+  __in_draw = true
 end
 
 function afterdraw()
@@ -87,6 +88,7 @@ function afterdraw()
   love.graphics.setColor(1,1,1,1)
   love.graphics.origin()
   love.graphics.draw(render_canvas,0,0,0,graphics.scrn_scalex,graphics.scrn_scaley)
+  __in_draw = false
 end
 
 function flip()
@@ -406,7 +408,15 @@ function new_surface(w,h)
 end
 
 function draw_to(surf)
-  surf=surf or render_canvas
+  if not surf then
+    if __in_draw then
+      love.graphics.setCanvas(render_canvas)
+    else
+      love.graphics.setCanvas()
+    end
+    return
+  end
+  
   love.graphics.setCanvas(surf)
 end
 
