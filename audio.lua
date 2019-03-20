@@ -8,6 +8,22 @@ function init_audio()
  
   local sfx_list={
 --  name = "file.ext",
+    button   = "button.ogg",
+    deadbot  = "deadbot.ogg",
+    deadwall = "deadwall.ogg",
+    harvest  = "harvest.ogg",
+    hurtbot  = "hurtbot.ogg",
+    newtask  = "newtask.ogg",
+    newunit  = "newunit.ogg",
+    newwall  = "newwall.ogg",
+    nomoney  = "nomoney.ogg",
+    over     = "over.ogg",
+    select   = "select.ogg",
+    start    = "start.ogg",
+    
+    menu_confirm = "menu_confirm.ogg",
+    menu_select  = "menu_select.ogg",
+    menu_slider  = "menu_sliderset.ogg"
   }
   
   musics={}
@@ -40,7 +56,7 @@ function sfx(name,x,y,pitch,volume)
   end
   
   if volume then
-    s:setVolume(volume/100 * sfx_vol/100)
+    s:setVolume(volume * sfx_vol/100)
   end
   
   if x and y then

@@ -62,7 +62,7 @@ function color_tile(x, y, faction)
   if x < 0 or y < 0 or x >= GRID_WN or y>= GRID_HN then
     return
   end
-
+  
   local b_d = board[y][x]
   
   if b_d.wall or b_d.building then return end
@@ -74,6 +74,10 @@ function color_tile(x, y, faction)
     else
       faction_tiles[fac] = faction_tiles[fac]-1
     end
+  end
+  
+  if not in_lobby and faction == my_faction then
+    sfx("menu_slider")
   end
   
   b_d.faction = faction

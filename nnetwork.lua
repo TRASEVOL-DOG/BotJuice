@@ -233,12 +233,11 @@ function sync_entity(id, data)
     elseif data.hoard < s.hoard and data.taker then
       local x,y = board_to_screen(s.x, s.y)
       create_floatingtxt(x, y-3, "+"..s.hoard, faction_color[data.taker])
+      sfx("harvest", nil, nil, 0.9, (data.taker == my_faction) and 0.5 or 0.15)
     end
     s.hoard = data.hoard
     s.taker = data.taker
   else
-    s.hp = data.hp
-    
     if data.task ~= 0 and not same_task(data.task, s.task) then
       s.task = copy_task(data.task)
     end

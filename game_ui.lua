@@ -148,6 +148,7 @@ function select_next_entity(ty, prev)
     if s and s.faction == my_faction and s.type == ty then
       selected = s
       refresh_control_ui(s)
+      sfx("select")
       return
     end
     
@@ -217,6 +218,9 @@ end
 function update_button(s)
   local cx, cy = cursor.x, cursor.y
   
+  local opressed = s.pressed
+  local callb = false
+  
   if cx > s.x and cx < s.x+s.w and cy > s.y and cy < s.y+s.h then
     s.hovered = true
     
@@ -228,6 +232,7 @@ function update_button(s)
     
     if mouse_btnr(0) then
       s.callback()
+      callb = true
     end
   else
     s.hovered = false
@@ -240,6 +245,19 @@ function update_button(s)
   
   if btnr(s.key) then
     s.callback()
+    callb = true
+  end
+  
+  if s.pressed and not opressed then
+    sfx("button", nil, nil, 0.5)
+  end
+  
+  if callb then
+    sfx("button", nil, nil, 1)
+    
+    if s.cost and faction_res[my_faction] < s.cost then
+      sfx("nomoney")
+    end
   end
   
   if s.task_type then

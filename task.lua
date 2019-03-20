@@ -348,6 +348,10 @@ function update_task(s)
     else
       s.task_t = 0
     end
+    
+    if s.task and s == selected and s.faction == my_faction then
+      sfx("newtask")
+    end
   end
 end
 

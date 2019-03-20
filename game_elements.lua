@@ -170,6 +170,7 @@ end
 
 function do_damage(s, target)
   target.hp = target.hp - (1+irnd(2))
+  sfx("hurtbot",nil,nil,nil,(target.faction == my_faction) and 1 or 0.25)
   
   if target.hp <= 0 and server_only then
     target:die()
@@ -259,6 +260,8 @@ function create_unit(tx,ty,faction,id)
     create_smoke(x, y, 1.5, 0.5+rnd(2), pick{23, 23, c, c, c_drk[c], c_lit[c]})
   end
   
+  sfx("newunit",nil,nil,nil,(faction == my_faction) and 1 or 0.25)
+  
   register_object(s)
   
   castle_print("Unit [id:"..s.id.." - faction:"..s.faction.."] was created.")
@@ -271,6 +274,7 @@ function destroy_unit(s)
   create_explosion(x, y, 10, faction_color[s.faction])
  
   add_shake(2)
+  sfx("deadbot")
   
   scorch_ground(s.x, s.y, s.faction)
 
@@ -486,6 +490,8 @@ function create_building(x, y, produce, faction, id)
     s.player_name = client.share[7][c_id]
   end
   
+  sfx("newwall",nil,nil,nil,(faction == my_faction) and 1 or 0.25)
+  
   register_object(s)
   
   castle_print("Building [id:"..s.id.." - faction:"..s.faction.."] was created.")
@@ -499,6 +505,9 @@ function destroy_building(s)
   
   s.dead = true
   dead_ids[s.id] = true
+  
+  add_shake(1)
+  sfx("deadwall")
   
   if not s.produce then
     update_wallsurf(s.x, s.y, s.faction, false)

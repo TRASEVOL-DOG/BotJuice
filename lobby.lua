@@ -73,6 +73,8 @@ end
 function start_game()
   in_lobby = false
   
+  sfx("start")
+  
   if server_only then
     castle_print("Starting game!")
     activate_map()

@@ -219,7 +219,7 @@ function update_cursor(s)
       end
     end
   
-    if mouse_btn(0) then
+    if mouse_btnp(0) then
       select_at(s.board_x, s.board_y)
     end
   end
@@ -237,6 +237,8 @@ function select_at(x,y)
       selected = nil
     end
   end
+  
+  if selected then sfx("select") end
   
   refresh_control_ui(selected)
 end
@@ -416,8 +418,8 @@ function define_menus()
     },
     settings={
 --      {"Fullscreen", fullscreen},
-      {"Master Volume", master_volume,"slider",100},
-      {"Music Volume", music_volume,"slider",100},
+--      {"Master Volume", master_volume,"slider",100},
+--      {"Music Volume", music_volume,"slider",100},
       {"Sfx Volume", sfx_volume,"slider",100},
       {"Back", menu_back}
     },

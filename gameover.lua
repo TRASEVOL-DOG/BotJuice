@@ -4,6 +4,8 @@ gameover_str = "Game Over"
 
 function end_game(reason)
   if game_over then return end
+  
+  sfx("over")
 
   gameover_str = reason or "Game Over"
 
