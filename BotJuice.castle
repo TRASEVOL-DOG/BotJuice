@@ -1,9 +1,9 @@
 ---
 main: main.lua
-name: BotJuice⚙️
-owner: trasevol-dog
+name: BotJuice⚙
+username: trasevol-dog
 primaryColor: ffffff
-coverImageUrl: https://raw.githubusercontent.com/trasevol-dog/botjuice/master/botjuice-preview.png
+coverImageUrl: https://github.com/TRASEVOL-DOG/BotJuice/blob/master/botjuice-preview.png
 description: |
-Fight for supremacy in this minimalist RTS!
-Make your bots cover more ground than your opponents to win the game!
+ Fight for supremacy in this minimalist RTS!
+ Make your bots cover more ground than your opponents to win the game!
