@@ -20,8 +20,6 @@ else
   end
 end
 
-if client_input then debuggg = "yea" else debuggg = "no" end
-
 client.changed = client_input
 client.connect = client_connect
 client.disconnect = client_disconnect

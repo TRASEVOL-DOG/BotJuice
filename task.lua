@@ -194,8 +194,15 @@ task_lib = {
           return true
         end
         
-        board[npos.y][npos.x].unit = s
-        s.task = new_task("walk", { path = {npos}})
+        --board[npos.y][npos.x].unit = s
+        
+        local dx = npos.x - s.x
+        local dy = npos.y - s.y
+        local dirs = {["-10"] = "walk_left", ["10"] = "walk_right", ["0-1"] = "walk_up", ["01"] = "walk_down"}
+        local ntask = dirs[""..dx..dy]
+        s.task = new_task(ntask)
+        
+        --s.task = new_task("walk", { path = {npos}})
       else
         s.task = new_task("hit", { target = task.target })
       end

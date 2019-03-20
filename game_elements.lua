@@ -208,13 +208,6 @@ function draw_unit(s, x,y)
   draw_anim(x, y-5, "unit", s.state, s.animt)
 --  spr(80, x, y, 2, 1)
   faction_pal()
-  
-  local y = y-6
-  if s.hp < s.maxhp then
-    draw_healthbar(s,x,y)
-    y = y-5
-  end
-  draw_task_timer(x,y,s.task,s.task_t)
 end
 
 function create_unit(tx,ty,faction,id)
@@ -255,6 +248,10 @@ function create_unit(tx,ty,faction,id)
     entities[entity_id], s.id, entity_id = s, entity_id, entity_id + 1
   end
 
+  if not server_only then
+    local c_id = client.share[14][faction]
+    s.player_name = client.share[7][c_id]
+  end
 
   local x,y = board_to_screen(s.x, s.y)
   local c = faction_color[s.faction]
@@ -345,7 +342,14 @@ function draw_taskprevision(s)
     elseif task.type == "walk_up"    then dy = -1
     elseif task.type == "walk_down"  then dy = 1
     elseif task.type == "walk_to"    then x,y = task.to.x,task.to.y
-    elseif task.type == "walk"    then x,y = task.path[#task.path].x, task.path[#task.path].y end
+    elseif task.type == "walk"       then x,y = task.path[#task.path].x, task.path[#task.path].y
+    elseif task.type == "attack"     then
+      local target = entities[task.target]
+      if target then
+        x,y = target.x, target.y
+      end
+    end
+    
     if dx or dy then
       x = x + (dx or 0)
       y = y + (dy or 0)
@@ -376,7 +380,7 @@ function draw_taskprevision(s)
 end
 
 function draw_selected()
-  if not selected then return end
+  if not selected or game_over then return end
   
   local x,y = board_to_screen(selected.x, selected.y)
   --circ(x, y, 5+1.5*cos(t), 21)
@@ -390,7 +394,7 @@ function draw_selected()
   --rect(x-d, y-d, x+d, y+d, 23) d = d-1
   --rect(x-d, y-d, x+d, y+d, 0)
   
-  selected:draw()
+--  selected:draw()
   
 --  if mini_menu then
 --    draw_minimenu(selected, x, y + 0.75*TILE_H)
@@ -427,13 +431,6 @@ function draw_building(s, x,y)
     end
   end
   faction_pal()
-  
-  local y = y-10
-  if s.hp < s.maxhp then
-    draw_healthbar(s,x,y)
-    y = y-5
-  end
-  draw_task_timer(x,y,s.task,s.task_t)
 end
 
 function create_building(x, y, produce, faction, id)
@@ -482,6 +479,11 @@ function create_building(x, y, produce, faction, id)
     entity_id = max(entity_id, id+1)
   else
     entities[entity_id], s.id, entity_id = s, entity_id, entity_id + 1
+  end
+  
+  if not server_only then
+    local c_id = client.share[14][faction]
+    s.player_name = client.share[7][c_id]
   end
   
   register_object(s)

@@ -160,6 +160,24 @@ function draw_game()
   draw_taskprevision(selected)
   
   font("small")
+  for s in group("task_doer") do
+    local x,y = board_to_screen(s.x, s.y)
+    local hover = abs(x-cursor.x)<4 and abs(y-cursor.y)<4
+    
+    local y = y-6
+    if s.hp < s.maxhp or hover then
+      draw_healthbar(s,x,y)
+      y = y-5
+    end
+    draw_task_timer(x,y,s.task,s.task_t)
+    
+    if hover then
+      local c = faction_color[s.faction]
+      font("small")
+      draw_text(s.player_name, x, y-5, 1, c_drk[c], c_lit[c], 23)
+    end
+  end
+  
   for s in group("resource") do
     local x,y = board_to_screen(s.x, s.y)
     draw_text(""..s.hoard, x, y-9, 1, 0, 22, 23)
@@ -187,9 +205,7 @@ function update_cursor(s)
   if s.board_x then
     if selected and selected.type == "unit" then
       if mouse_btnr(1) then
-        if s.board_x == selected.x and s.board_y == selected.y then
-          --open_minimenu(selected)
-        else
+        if selected.faction == my_faction and (s.board_x ~= selected.x or s.board_y ~= selected.y) then
           local b_d = board[s.board_y][s.board_x]
           local t = b_d.unit or b_d.building
           if t and t.faction ~= selected.faction then
@@ -328,7 +344,7 @@ function init_game()
   
   dead_ids = {}
   
-  faction_res = {99,99,99,99}
+  faction_res = {30,30,30,30}
   faction_tiles = {0,0,0,0}
   
   if server_only then

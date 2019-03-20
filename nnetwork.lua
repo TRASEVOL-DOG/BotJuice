@@ -231,7 +231,6 @@ function sync_entity(id, data)
     if data.hoard > s.hoard then
       s.prodt = s.prod
     elseif data.hoard < s.hoard and data.taker then
-      debuggg = "!!!"
       local x,y = board_to_screen(s.x, s.y)
       create_floatingtxt(x, y-3, "+"..s.hoard, faction_color[data.taker])
     end
