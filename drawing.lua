@@ -311,6 +311,27 @@ function draw_text_bicolor(str,x,y,al,c0, c1a,c2a, c1b,c2b)
 end
 
 
+-- to check that a font support all glyphs in a string
+-- if 'font' is nil, will check all fonts
+function safe_glyphs(str, font)
+  if font then
+    local f = graphics.fonts[font]
+    if f then
+      return f:hasGlyphs(str)
+    else
+      error("Attempt to check glyph safety for inexistant font")
+    end
+  else
+    for _,f in pairs(graphics.fonts) do
+      if not f:hasGlyphs(str) then
+        return false
+      end
+    end
+    
+    return true
+  end
+end
+
 function str_width(str, fnt)
   if fnt then
     fnt = graphics.fonts[fnt]
