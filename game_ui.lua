@@ -35,7 +35,7 @@ function draw_ui()
   
   y = y + 16
   line(midx - 48, y, midx+48, y, 22)
-  y = y + 14
+  y = y + 9
   
   -- Available resources
   local fac = my_faction or 1
@@ -45,13 +45,13 @@ function draw_ui()
   xx = midx
   draw_text2(faction_res[fac].." $", xx, y, 1, 0, c, cl)
   
-  y = y + 14
+  y = y + 11
   local n = group_size("unit"..fac)
   draw_text2(n.." unit"..(n>1 and "s" or ""), xx, y, 1, 0, c, cl)
   
-  y = y + 16
+  y = y + 12
   line(midx - 48, y, midx+48, y, 22)
-  y = y + 33
+  y = y + 41
   
   -- Selected unit panel
   if selected then
@@ -109,7 +109,7 @@ function draw_ui()
 end
 
 
-
+tooltips = true
 function init_control_ui()
   if select_buttons then
     for s in all(select_buttons) do
@@ -118,11 +118,17 @@ function init_control_ui()
   end
 
   local x = UI_X
-  local y = UI_Y + 69
+  local y = UI_Y + 61
   local scrnw,scrnh = screen_size()
   local xb = GRID_X - 8
   local midx = lerp(x, xb, 0.5)
+  
+  local w = 96
+  local h = 14
+  create_button(midx-w/2, y-8, w, h, nil, {"toggle tooltips"}, function() tooltips = not tooltips end, 'h')
 
+  y = y + 8
+  
   local w,h = 32, 24
   select_buttons = {
     create_button(x,    y+h/2,     w, h, nil, {"prev", "unit"}, function() select_next_entity("unit", true) end, 'q'),
@@ -356,13 +362,48 @@ function draw_button(s)
     end
   end
 
-  if s.hovered and s.key_str then
-    font("small")
-    local x = lerp(8, GRID_X-8, 0.5)
-    local y = 77
-    local str = "Shortcut: ['"..string.upper(s.key_str).."']"
-    draw_text(str, x, y+1, 1, 22)
-    draw_text(str, x, y, 1, 20)
+--  if s.hovered and s.key_str then
+--    font("small")
+--    local x = lerp(8, GRID_X-8, 0.5)
+--    local y = 77
+--    local str = "Shortcut: ['"..string.upper(s.key_str).."']"
+--    draw_text(str, x, y+1, 1, 22)
+--    draw_text(str, x, y, 1, 20)
+--  end
+end
+
+function draw_tooltip()
+  if not tooltips then return end
+
+  for s in group("ui_button") do
+    if s.hovered then
+      local strs = { "Shortkey: ['"..string.upper(s.key_str).."']" }
+      if s.task_type == "juice" or s.task_type == "build_wall" then
+        add(strs, "Can be held to")
+        add(strs, "use with movement")
+      end
+      
+      font("small")
+      
+      local w = 0
+      for str in all(strs) do
+        w = max(w, str_width(str))
+      end
+      
+      w = w + 8
+      local h = #strs * 10 + 8
+      
+      local x = flr(cursor.x + 3)
+      local y = flr(cursor.y - h - 3)
+      
+      draw_frame(328, x-4, y-4, x+w+4, y+h+4, true)
+      x = x + w/2
+      y = y + 4 + 2
+      for str in all(strs) do
+        draw_text(str, x, y, 1, 0, 22, 23)
+        y = y + 10
+      end
+    end
   end
 end
 
@@ -380,7 +421,7 @@ function create_button(x, y, w, h, s, strs, callback, key, reg, task_type)
     pressed = false,
     update = update_button,
     draw = draw_button,
-    regs = {"to_update", "to_draw3", reg}
+    regs = {"to_update", "to_draw3", "ui_button", reg}
   }
   
   if task_type then

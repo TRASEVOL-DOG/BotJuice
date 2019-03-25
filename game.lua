@@ -23,6 +23,7 @@ require("lobby")
 
 GAME_TIME = 256
 --DEBUG_SKIP_LOBBY = true
+--DEBUG_NO_GAMEOVER = true
 --DEBUG_KEEP_SERVER_OPEN = true
 
 mini_menu = nil
@@ -49,6 +50,7 @@ function _init()
     "res_building3",
     "res_building4",
     "control_ui",
+    "ui_button",
     "resource"
   )
 
@@ -189,6 +191,8 @@ function draw_game()
 
   draw_ui()
   draw_connection()
+  
+  draw_tooltip()
 end
 
 
@@ -249,8 +253,10 @@ function draw_cursor(s)
   --circfill(s.x, s.y, 2, 21)
   --circfill(s.x, s.y, 1, 23)
   
-  if selected and selected.type == "unit" and selected.faction == my_faction then
-    if s.board_x then
+  if s.board_x then
+    local is_my_unit = selected and selected.type == "unit" and selected.faction == my_faction
+  
+    if is_my_unit then
       if mouse_btn(1) then
         local way = get_path(selected.x, selected.y, s.board_x, s.board_y, selected.faction, selected)
         for w in all(way) do
@@ -264,22 +270,32 @@ function draw_cursor(s)
           faction_pal()
         end
       end
-      
-      local b_d = board[s.board_y][s.board_x]
+    end
+    
+    local b_d = board[s.board_y][s.board_x]
+    if tooltips and not b_d.wall then
       local o = b_d.unit or b_d.building
       
-      if not b_d.wall and not (o and o.faction == selected.faction) then
-        font("small")
-        local str = "Right-Click to "
-        if o then
-          str = str.."attack!"
-        else
-          str = str.."go there"
+      font("small")
+      local str
+      
+      if o then
+        if o.faction == my_faction then
+          str = "Left-Click to select"
+        elseif is_my_unit then
+          str = "Right-Click to attack!"
         end
+      elseif is_my_unit then
+        str = "Right-Click to go there"
+      end
+      
+      if str then
+        local x,y = GRID_X + GRID_W/2, GRID_Y - 3
+        local w = str_width(str)+8
+        local h = 18
         
-        local x,y = GRID_X + GRID_W/2, GRID_Y - 11
-        draw_text(str, x, y+1, 1, 22)
-        draw_text(str, x, y, 1, 0)
+        draw_frame(328, x-w/2-4, y-h/2-4, x+w/2+4, y+h/2+4, true)
+        draw_text(str, x, y-4, 1, 0, 22, 23)
       end
     end
   end

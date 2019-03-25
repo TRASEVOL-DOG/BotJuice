@@ -3,6 +3,7 @@
 gameover_str = "Game Over"
 
 function end_game(reason)
+  if DEBUG_NO_GAMEOVER then return end
   if game_over then return end
   
   sfx("over")
