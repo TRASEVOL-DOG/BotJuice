@@ -73,6 +73,7 @@ function _init()
 end
 
 network_t = 0
+fx_t = 0
 function _update(dt)
   if btnp(6) then
     refresh_spritesheets()
@@ -83,6 +84,7 @@ function _update(dt)
   end
 
   t = t + dt
+  fx_t = fx_t - dt
 
   update_shake()
   
@@ -92,6 +94,10 @@ function _update(dt)
     update_gameover()
   else
     update_game()
+  end
+  
+  if fx_t <= 0 then
+    fx_t = 0.05
   end
   
   update_network()
@@ -166,7 +172,7 @@ function draw_game()
     local x,y = board_to_screen(s.x, s.y)
     local hover = abs(x-cursor.x)<4 and abs(y-cursor.y)<4
     
-    local y = y-6
+    local y = y-8
     if s.hp < s.maxhp or hover then
       draw_healthbar(s,x,y)
       y = y-5
@@ -235,7 +241,6 @@ function select_at(x,y)
     selected = b_d.unit
   elseif b_d.building then
     selected = b_d.building
-    open_minimenu(selected)
   else
     if not mini_menu then
       selected = nil

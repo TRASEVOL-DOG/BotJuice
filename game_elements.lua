@@ -40,6 +40,12 @@ function update_unit(s)
     end
   end
   
+  if not server_only and s.hp < s.maxhp/2 and fx_t <= 0 and chance(10) then
+    local x,y = board_to_screen(s.x, s.y)
+    local c = faction_color[s.faction]
+    create_smoke(x, y, 0.25+rnd(0.25), 0.5+rnd(2), pick{c, c_drk[c], c_drk[x], 0, 0})
+  end
+  
   update_task(s)
   
   board[s.y][s.x].unit = s

@@ -54,17 +54,17 @@ function draw_lobby()
   
   draw_minimap(scrnw-8, 0.53*scrnh-20, 2, 1, true)
   
-  draw_instructions(scrnw/2, 0.53*scrnh - 60)
   
   local x = 16
   local y = 0.53*scrnh - 68--64
   draw_lobby_connection(x, y)
-  draw_countdown(scrnw/2, y)
+  draw_countdown(scrnw/2, y - 12)
   y = y + 32
   
   draw_player_list(x, y)
   y = y + 64
   
+  draw_instructions(scrnw/2, 0.53*scrnh - 60)
   
   draw_menu()
 end
