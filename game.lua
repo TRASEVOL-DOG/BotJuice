@@ -320,10 +320,11 @@ end
 
 
 function draw_debug()
+  if #debuggg == 0 then return end
+
   local scrnw, scrnh = screen_size()
   
   font("small")
-  
   draw_text("debug: "..debuggg, scrnw, scrnh-8, 2, 21)
 end
 

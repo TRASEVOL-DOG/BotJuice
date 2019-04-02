@@ -47,12 +47,17 @@ function draw_lobby()
   
   local scrnw,scrnh = screen_size()
   
-  draw_title(scrnw/2 - 136/2,8)
+  draw_title(scrnw/2 - 136/2, 6)
+--  draw_title(16,8)
   
-  draw_minimap(scrnw-8, 0.4*scrnh, 2, 1, true)
+  draw_credits(scrnw/2, 50)
+  
+  draw_minimap(scrnw-8, 0.53*scrnh-20, 2, 1, true)
+  
+  draw_instructions(scrnw/2, 0.53*scrnh - 60)
   
   local x = 16
-  local y = 64
+  local y = 0.53*scrnh - 68--64
   draw_lobby_connection(x, y)
   draw_countdown(scrnw/2, y)
   y = y + 32
@@ -121,6 +126,55 @@ function draw_title(x,y)
   faction_pal()
   
   spritesheet("sprites")
+end
+
+function draw_credits(x,y)
+  
+  font("big")
+  local str = "A Castle game by Remy \"Trasevol_Dog\" Devaux"
+  
+  local w = str_width(str) + 40
+  
+  draw_text(str, x-w/2+40, y, 0, 0, 22)
+  
+  all_colors_to(0)
+  spr(268, x-w/2+16-1, y+4, 4, 3)
+  spr(268, x-w/2+16+1, y+4, 4, 3)
+  spr(268, x-w/2+16, y+4-1, 4, 3)
+  spr(268, x-w/2+16, y+4+1, 4, 3)
+  if my_faction then
+    faction_pal(my_faction)
+    pal(23,23)
+  else
+    all_colors_to()
+  end
+  spr(268, x-w/2+16, y+4, 4, 3)
+  all_colors_to()
+  
+  
+  local scrnw, scrnh = screen_size()
+  font("small")
+  
+  draw_text("Thank you to my Patreon supporters!",4,scrnh-18,0, 21, 22)
+  local str = "   ~~~   ^Joseph White^,  ^Spaceling^,  rotatetranslate,  Anne Le Clech,  Wojciech Rak,  HJS,  slono,  Austin East,  Zachary Cook,  Jefff,  Meru,  Bitzawolf,  Paul Nguyen,  Dan Lewis,  Christian Östman,  Dan Rees-Jones,  Reza Esmaili,  Andreas Bretteville,  Joel Jorgensen,  Marty Kovach,  Giles Graham,  Flo Devaux,  Cole Smith,  Thomas Wright,  HERVAN,  berkfrei,  Tim and Alexandra Swast,  Jearl,  Chris McCluskey,  Sam Loeschen,  Pat LaBine,  Collin Caldwell,  Andrew Reitano,  Qristy Overton,  Finn Ellis,  amy,  Brent Werness,  yunowadidis-musik,  Max Cahill,  hushcoil,  Jacel the Thing,  Gruber,  Pierre B.,  Sean S. LeBlanc,  Andrew Reist,  vaporstack,  Jakub Wasilewski"
+  local w = str_width(str)
+  local x = 4-((t*50)%w)
+  draw_text(str,x,scrnh-8,0, 0, 22)
+  draw_text(str,x+w,scrnh-8,0, 0, 22)
+end
+
+function draw_instructions(x,y)
+  font("small")
+  
+  local c = 22
+  if my_faction then
+    c = c_lit[faction_color[my_faction]]
+  end
+  
+  draw_text("cover as much of", x, y, 1, 0, c, 23) y = y + 12
+  draw_text("the board as you", x, y, 1, 0, c, 23) y = y + 12
+  draw_text("can with your"   , x, y, 1, 0, c, 23) y = y + 12
+  draw_text("bot juice"       , x, y, 1, 0, c, 23)
 end
 
 function draw_lobby_connection(x, y)
